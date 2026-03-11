@@ -6,7 +6,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA E CSS (EXTREMO MOBILE)
+# 1. CONFIGURAÇÃO DA PÁGINA E CSS SEGURO
 # ==========================================
 st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
 
@@ -14,18 +14,17 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
     
-    /* 1. ANIQUILAÇÃO TOTAL DAS MARCAS DO STREAMLIT (Coroa e Perfil) */
-    header, footer { visibility: hidden !important; display: none !important; }
-    [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
-    #viewerBadge, .viewerBadge_container, .viewerBadge_link { display: none !important; visibility: hidden !important; opacity: 0 !important; }
-    iframe[title="Streamlit Community Cloud badge"] { display: none !important; }
-    [data-testid="stAppViewContainer"] > div:last-child { display: none !important; }
+    /* 1. REMOVER MARCAS DO STREAMLIT (SEGURANÇA) */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .viewerBadge_container {display: none !important;}
     
     /* 2. OTIMIZAÇÃO DE ESPAÇO NO TOPO DA TELA */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 5rem !important;
-        margin-top: -30px !important;
+        margin-top: -20px !important;
     }
     .stApp { background-color: #0E1117; color: #FAFAFA; }
     
@@ -43,19 +42,16 @@ st.markdown("""
     h2, h3 { color: #C0C0C0 !important; text-align: center; }
     h4 { color: #C0C0C0 !important; text-align: center; font-size: 1rem !important; margin-bottom: 20px;}
     
-    /* 4. HACK CIRÚRGICO PARA BOTÕES LADO A LADO NO CELULAR SEM QUEBRAR TUDO */
+    /* 4. HACK CIRÚRGICO PARA BOTÕES LADO A LADO NO CELULAR */
     @media (max-width: 768px) {
         div[data-testid="stHorizontalBlock"] {
-            display: flex !important;
             flex-direction: row !important;
             flex-wrap: nowrap !important;
-            justify-content: center !important;
             gap: 10px !important;
         }
         div[data-testid="column"] {
             width: 50% !important;
             min-width: 45% !important;
-            flex: 1 1 50% !important;
         }
     }
     
@@ -69,18 +65,14 @@ st.markdown("""
         border: none !important; 
         font-weight: 800 !important; 
         text-transform: uppercase; 
-        font-size: 0.70rem !important; 
+        font-size: 0.75rem !important; 
         animation: pulse 2s infinite; 
-        padding: 15px 2px !important; 
+        padding: 15px 5px !important; 
         width: 100%;
-        height: 100%;
         text-align: center;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
     
-    /* 6. BOTÃO: ÁREA RESTRITA (Fundo Preto com Contorno Glitch Fino) */
+    /* 6. BOTÃO: ÁREA RESTRITA (Fundo Preto com Contorno Glitch) */
     div[data-testid="stButton"] button[kind="secondary"] { 
         background-color: #050505 !important; 
         color: #FFFFFF !important; 
@@ -88,16 +80,12 @@ st.markdown("""
         border-radius: 4px !important; 
         font-weight: 800 !important; 
         text-transform: uppercase; 
-        font-size: 0.70rem !important;
+        font-size: 0.75rem !important;
         box-shadow: -2px -2px 0px 0px #2b7cff, 2px 2px 0px 0px #ff3333 !important; 
         transition: 0.1s !important; 
-        padding: 15px 2px !important; 
+        padding: 15px 5px !important; 
         width: 100%;
-        height: 100%;
         text-align: center;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
     div[data-testid="stButton"] button[kind="secondary"]:active {
         box-shadow: 2px 2px 0px 0px #2b7cff, -2px -2px 0px 0px #ff3333 !important;
@@ -127,7 +115,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CONEXÃO COM GOOGLE SHEETS E FUNÇÕES
+# 2. CONEXÃO COM GOOGLE SHEETS
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
@@ -166,12 +154,10 @@ def mudar_pagina(nova_pagina):
 # ==========================================
 # 3. INTERFACE GERAL (LOGO CENTRALIZADA)
 # ==========================================
-# Colunas para empurrar a logo perfeitamente para o centro
 col_espaco_esq, col_logo, col_espaco_dir = st.columns([1.2, 1, 1.2])
 
 with col_logo:
     try:
-        # Puxando o arquivo logo.jpg que você enviou
         st.image("logo.jpg", use_container_width=True)
     except FileNotFoundError:
         pass
@@ -179,7 +165,7 @@ with col_logo:
 st.title("Cartão Fidelidade")
 
 # ==========================================
-# TELA 1: INÍCIO (Layout Lado a Lado Forçado)
+# TELA 1: INÍCIO (Layout Lado a Lado)
 # ==========================================
 if st.session_state['pagina_atual'] == 'inicio':
     st.markdown("<h4>Selecione seu acesso:</h4>", unsafe_allow_html=True)
