@@ -297,7 +297,7 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
         st.write("")
         if st.button("ENTRAR", type="primary", use_container_width=True):
             # A NOVA SENHA ATUALIZADA
-            if senha == "ADMilton@2576":
+            if senha == "Admilton@2576":
                 st.session_state['autenticado'] = True
                 st.rerun()
             else:
