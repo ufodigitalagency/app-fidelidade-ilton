@@ -4,7 +4,6 @@ import urllib.parse
 import gspread
 from google.oauth2.service_account import Credentials
 import os
-import json 
 
 # ==========================================
 # 1. CONFIGURAÇÃO DA PÁGINA E CSS
@@ -334,3 +333,4 @@ st.markdown("""
     </div>
 
 """, unsafe_allow_html=True)
+
