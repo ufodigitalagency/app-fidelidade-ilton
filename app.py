@@ -3,10 +3,9 @@ import pandas as pd
 import urllib.parse
 import gspread
 from google.oauth2.service_account import Credentials
-import os
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA E CSS (BLINDADO PARA MOBILE)
+# 1. CONFIGURAÇÃO DA PÁGINA E CSS (CAMISA DE FORÇA MOBILE)
 # ==========================================
 st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
 
@@ -14,34 +13,35 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
     
-    /* 1. ANIQUILAR MARCAS DO STREAMLIT DE VEZ */
-    header { visibility: hidden !important; display: none !important; }
-    footer { visibility: hidden !important; display: none !important; }
-    .viewerBadge_container, .viewerBadge_link, #viewerBadge { display: none !important; visibility: hidden !important; }
-    [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
+    /* 1. LIMPEZA DA TELA (Adeus Coroa) */
+    header, footer, [data-testid="stToolbar"], .viewerBadge_container { 
+        display: none !important; 
+        visibility: hidden !important; 
+    }
     
-    /* 2. ESPAÇAMENTO E TRAVA DE TELA (Evita quebrar o layout para os lados) */
+    /* 2. FUNDO E ESPAÇAMENTOS GERAIS */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 5rem !important;
-        margin-top: -30px !important;
+        margin-top: -20px !important;
         max-width: 100% !important;
-        overflow-x: hidden !important; 
+        overflow-x: hidden !important;
     }
     .stApp { background-color: #0E1117; color: #FAFAFA; overflow-x: hidden !important; }
     
-    /* 3. LOGO CENTRALIZADA E PEQUENA VIA CSS */
+    /* 3. LOGO FORÇADA NO CENTRO */
     [data-testid="stImage"] {
-        display: flex;
-        justify-content: center;
-        margin-bottom: -15px;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 0 auto !important;
     }
     [data-testid="stImage"] img {
-        max-width: 160px !important; 
-        height: auto;
+        max-width: 170px !important;
+        margin: 0 auto !important;
     }
     
-    /* 4. TÍTULOS E TEXTOS */
+    /* 4. TEXTOS E TÍTULOS */
     h1 { 
         font-family: 'Montserrat', sans-serif !important; 
         color: #D4AF37 !important; 
@@ -50,24 +50,29 @@ st.markdown("""
         letter-spacing: 2px; 
         font-size: 1.8rem !important; 
         line-height: 1.1;
-        margin-top: 0px !important;
+        margin-top: -10px !important;
     }
     h2, h3 { color: #C0C0C0 !important; text-align: center; }
-    h4 { color: #C0C0C0 !important; text-align: center; font-size: 1rem !important; margin-bottom: 20px;}
+    h4 { color: #C0C0C0 !important; text-align: center; font-size: 1rem !important; margin-bottom: 15px !important; }
     
-    /* 5. BOTÕES LADO A LADO SEM QUEBRAR A TELA */
-    div[data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        justify-content: center !important;
-        gap: 10px !important;
-        width: 100% !important;
-    }
-    div[data-testid="column"] {
-        width: 50% !important;
-        min-width: 48% !important;
-        flex: 1 1 50% !important;
+    /* 5. SUPER HACK: BOTÕES LADO A LADO SEM COLAR NA TELA */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"] {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            justify-content: center !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 0 20px !important; /* Desgruda das bordas do celular */
+            box-sizing: border-box !important;
+        }
+        /* Atacando o nome antigo e o novo do Streamlit */
+        div[data-testid="column"], div[data-testid="stColumn"] {
+            width: 50% !important;
+            min-width: 0 !important;
+            flex: 1 1 50% !important;
+        }
     }
     
     /* 6. BOTÕES PRINCIPAIS (Vermelho Animado) */
@@ -76,15 +81,14 @@ st.markdown("""
     div[data-testid="stButton"] button[kind="primary"] { 
         background-color: #ff1a1a !important; 
         color: white !important; 
-        border-radius: 6px !important; 
+        border-radius: 8px !important; 
         border: none !important; 
         font-weight: 800 !important; 
         text-transform: uppercase; 
-        font-size: 0.65rem !important; 
+        font-size: 0.75rem !important; 
         animation: pulse 2s infinite; 
-        padding: 15px 2px !important; 
+        padding: 15px 5px !important; 
         width: 100%;
-        height: 100%;
         text-align: center;
         display: flex;
         justify-content: center;
@@ -101,14 +105,14 @@ st.markdown("""
         background-color: #1A1A1A !important;  
         color: #AAAAAA !important; 
         border: 1px solid #444 !important; 
-        border-radius: 6px !important; 
+        border-radius: 8px !important; 
         font-weight: bold !important; 
         text-transform: uppercase; 
-        padding: 8px !important; 
+        padding: 10px !important; 
         width: 100%;
     }
     
-    .btn-zap { background-color: #25D366 !important; color: white !important; border-radius: 6px; border: none; padding: 10px; font-weight: bold; width: 100%; text-transform: uppercase; text-align: center; display: block; text-decoration: none; margin-top: 15px; }
+    .btn-zap { background-color: #25D366 !important; color: white !important; border-radius: 8px; border: none; padding: 12px; font-weight: bold; width: 100%; text-transform: uppercase; text-align: center; display: block; text-decoration: none; margin-top: 15px; }
     .stTextInput>div>div>input, .stSelectbox>div>div>div { background-color: #1a1c24 !important; color: white !important; border: 1px solid #444 !important; text-align: center; }
     table { color: #FAFAFA !important; background-color: #1a1c24 !important; border-radius: 8px; width: 100%; }
     thead tr th { background-color: #2b7cff !important; color: white !important; }
@@ -156,15 +160,19 @@ def mudar_pagina(nova_pagina):
     st.session_state['pagina_atual'] = nova_pagina
 
 # ==========================================
-# 3. INTERFACE GERAL (LOGO)
+# 3. INTERFACE GERAL (LOGO ESPREMIDA NO CENTRO)
 # ==========================================
-# Renderiza a logo solta. O CSS lá em cima garante que ela fique no meio e pequena!
-try:
-    st.image("logo.png")
-except Exception:
-    pass
+# Colunas 1 e 3 vazias servem de "paredes" para forçar a logo no meio
+col_vazia_esq, col_logo, col_vazia_dir = st.columns([1, 1.2, 1])
 
-st.title("Cartão Fidelidade")
+with col_logo:
+    try:
+        st.image("logo.png", use_container_width=True)
+    except Exception:
+        pass
+
+# Título usando HTML para obedecer perfeitamente o CSS
+st.markdown("<h1>Cartão Fidelidade</h1>", unsafe_allow_html=True)
 
 # ==========================================
 # TELA 1: INÍCIO
