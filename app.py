@@ -4,9 +4,10 @@ import urllib.parse
 import gspread
 from google.oauth2.service_account import Credentials
 import os
+import json # Biblioteca nova para ler o Cofre Secreto
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA E CSS (SEGURO E OTIMIZADO)
+# 1. CONFIGURAÇÃO DA PÁGINA E CSS
 # ==========================================
 st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
 
@@ -14,12 +15,12 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
     
-    /* 1. REMOVER MARCAS DO STREAMLIT DE FORMA SEGURA */
+    /* REMOVER MARCAS DO STREAMLIT */
     header { visibility: hidden !important; }
     footer { visibility: hidden !important; }
     a[href^="https://streamlit.io/cloud"] { display: none !important; }
     
-    /* 2. OTIMIZAÇÃO DE ESPAÇO E FUNDO */
+    /* OTIMIZAÇÃO DE ESPAÇO NO TOPO */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 5rem !important;
@@ -27,7 +28,7 @@ st.markdown("""
     }
     .stApp { background-color: #0E1117; color: #FAFAFA; }
     
-    /* 3. TÍTULOS E TEXTOS AJUSTADOS */
+    /* TÍTULOS E TEXTOS */
     h1 { 
         font-family: 'Montserrat', sans-serif !important; 
         color: #D4AF37 !important; 
@@ -41,7 +42,7 @@ st.markdown("""
     h2, h3 { color: #C0C0C0 !important; text-align: center; }
     h4 { color: #C0C0C0 !important; text-align: center; font-size: 1rem !important; margin-bottom: 20px;}
     
-    /* 4. HACK CIRÚRGICO PARA BOTÕES LADO A LADO NO CELULAR */
+    /* BOTÕES LADO A LADO NO CELULAR */
     @media (max-width: 768px) {
         div[data-testid="stHorizontalBlock"] {
             display: flex !important;
@@ -56,11 +57,11 @@ st.markdown("""
         }
     }
     
-    /* 5. BOTÕES PRINCIPAIS (Vermelho Pulso Padrão para ambos) */
+    /* BOTÕES PRINCIPAIS (Vermelho Animado para AMBOS) */
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(255, 51, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0); } }
     
     div[data-testid="stButton"] button[kind="primary"] { 
-        background-color: #ff1a1a !important; /* Cor sólida para não dar bug no mobile */
+        background-color: #ff1a1a !important; 
         color: white !important; 
         border-radius: 6px !important; 
         border: none !important; 
@@ -82,7 +83,7 @@ st.markdown("""
         transform: scale(1.02);
     }
 
-    /* 6. Botões Discretos (Voltar, Sair - Estilo "Secondary") */
+    /* Botões Discretos (Voltar, Sair) */
     div[data-testid="stButton"] button[kind="secondary"] { 
         background-color: #1A1A1A !important;  
         color: #AAAAAA !important; 
@@ -99,22 +100,23 @@ st.markdown("""
     table { color: #FAFAFA !important; background-color: #1a1c24 !important; border-radius: 8px; width: 100%; }
     thead tr th { background-color: #2b7cff !important; color: white !important; }
     
-    /* 7. Rodapé Fixo e Limpo */
     .rodape-ufo { position: fixed; left: 0; bottom: 0; width: 100%; background-color: #0E1117; color: #444; text-align: center; padding: 5px; font-size: 0.65rem; border-top: 1px solid #1A1A1A; z-index: 999; }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CONEXÃO COM GOOGLE SHEETS
+# 2. CONEXÃO COM GOOGLE SHEETS (VIA COFRE SECRETO)
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 try:
-    credentials = Credentials.from_service_account_file("credenciais.json", scopes=scopes)
+    # Lendo do cofre invisível do Streamlit
+    cred_dict = json.loads(st.secrets["gcp_credentials"])
+    credentials = Credentials.from_service_account_info(cred_dict, scopes=scopes)
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
 except Exception as e:
-    st.error("⚠️ Erro de conexão com a planilha. O Google revogou a chave antiga ou ela não foi encontrada.")
+    st.error("⚠️ Erro de conexão com a planilha. O cofre secreto não foi configurado corretamente.")
     st.stop()
 
 def get_all_clients():
@@ -142,13 +144,12 @@ def mudar_pagina(nova_pagina):
     st.session_state['pagina_atual'] = nova_pagina
 
 # ==========================================
-# 3. INTERFACE GERAL (LOGO BLINDADA)
+# 3. INTERFACE GERAL (LOGO)
 # ==========================================
 col_espaco_esq, col_logo, col_espaco_dir = st.columns([1.2, 1, 1.2])
 
 with col_logo:
     try:
-        # Corrigido aviso do width
         st.image("logo.png", use_container_width=True)
     except Exception as e:
         pass
@@ -156,7 +157,7 @@ with col_logo:
 st.title("Cartão Fidelidade")
 
 # ==========================================
-# TELA 1: INÍCIO (Layout Lado a Lado)
+# TELA 1: INÍCIO
 # ==========================================
 if st.session_state['pagina_atual'] == 'inicio':
     st.markdown("<h4>Selecione seu acesso:</h4>", unsafe_allow_html=True)
@@ -164,13 +165,11 @@ if st.session_state['pagina_atual'] == 'inicio':
     col_cli, col_barb = st.columns(2)
     
     with col_cli:
-        # Botão Primário animado com Emoji
         if st.button("💇‍♂️ ÁREA DO CLIENTE", type="primary"):
             mudar_pagina('cliente')
             st.rerun()
             
     with col_barb:
-        # Agora o Área Restrita também é Primário (Vermelho Animado)
         if st.button("🔒 ÁREA RESTRITA", type="primary"):
             mudar_pagina('barbeiro')
             st.rerun()
@@ -285,7 +284,6 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                             st.markdown(f'<a href="https://wa.me/55{telefone_cli}?text={msg_encoded}" target="_blank" class="btn-zap">📱 Avisar no Whats</a>', unsafe_allow_html=True)
                             
                     with col2:
-                        # Alterado para "secondary" para não confundir com o vermelho primário
                         if st.button("🔄 Zerar", type="secondary"):
                             update_points(linha, 0)
                             st.success("Zerado!")
