@@ -1,35 +1,30 @@
 """
-Ilton Fidelidade Digital – Modernised Streamlit App
-===================================================
+Ilton Fidelidade Digital – Streamlit App
+======================================
 
-This application implements a customer loyalty program for a local barbershop.
-Customers can register or check their points balance, while the barber can
-award points, reset balances, edit or delete records, and view all
-participants. The design has been overhauled for a responsive, mobile-first
-experience while preserving all original functionality.
+This application implements a customer loyalty program for a local
+barbershop. Customers can check their points or register a new card,
+while barbers can manage points, edit or delete client records and
+view all registrations. The interface has been redesigned for a
+modern, mobile-friendly experience. All functionality from the
+original app remains intact.
 
-Key features:
+Credentials Handling
+--------------------
 
-* Responsive layout: components stack gracefully on narrow screens and
-  align neatly in two columns on wider displays.
-* Unified dark theme with accent colours that highlight interactive
-  elements.
-* Custom cards group related inputs and outputs for a cleaner look.
-* Graceful fallback when credentials are not provided via `st.secrets` by
-  loading from a local `credenciais.json` file.
-* Modular page functions separated into customer and barber sections.
+To connect with Google Sheets the app needs a service account. It
+attempts to load these credentials from Streamlit's secrets manager.
+It will first look for keys under `gcp_service_account` (used by the
+original code) and then under `gcp_credentials` (our earlier naming).
+If neither is found it falls back to a local `credenciais.json` file.
 
-To deploy this app on Streamlit Cloud, make sure to add your Google service
-account JSON either to the secrets manager (under the key
-`gcp_credentials`) or provide a `credenciais.json` file in the same
-directory as this script.
 """
 
 from __future__ import annotations
 
 import json
 import urllib.parse
-from typing import List, Tuple, Optional
+from typing import Optional, Tuple, List
 
 import streamlit as st
 import pandas as pd
@@ -41,28 +36,19 @@ from google.oauth2.service_account import Credentials
 # 1. PAGE CONFIGURATION & GLOBAL STYLES
 # -----------------------------------------------------------------------------
 
-# Configure page settings. A centred layout makes the app look more like a
-# dedicated mobile app on large screens while still allowing full width on
-# smaller devices.
 st.set_page_config(
     page_title="Ilton Fidelidade Digital",
     page_icon="✂️",
     layout="centered",
 )
 
-# Custom CSS to apply a cohesive dark theme and style components. The
-# responsive rules ensure the button columns stack on narrow viewports. This
-# style block also defines a reusable `.card` class for grouping inputs and
-# outputs.
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
 
-    /* Hide Streamlit default header and footer */
     header, footer { visibility: hidden; height: 0; }
 
-    /* Global styles */
     .stApp {
         background-color: #0E1117;
         color: #E0E0E0;
@@ -71,7 +57,7 @@ st.markdown(
     h1 {
         color: #F9DC5C;
         text-align: center;
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.5rem;
         font-weight: 700;
     }
     p.lead {
@@ -81,7 +67,6 @@ st.markdown(
         margin-bottom: 1.2rem;
     }
 
-    /* Card container */
     .card {
         background: #1C2028;
         padding: 1.5rem;
@@ -90,7 +75,6 @@ st.markdown(
         margin-bottom: 1.5rem;
     }
 
-    /* Buttons */
     div[data-testid="stButton"] > button {
         font-weight: 600;
         text-transform: uppercase;
@@ -117,7 +101,6 @@ st.markdown(
         background: #383C47;
     }
 
-    /* Inputs */
     input, textarea, select {
         background-color: #2A2D36 !important;
         border: 1px solid #444 !important;
@@ -126,7 +109,6 @@ st.markdown(
         padding: 0.5rem !important;
     }
 
-    /* Tables */
     table {
         width: 100% !important;
         border-collapse: collapse;
@@ -142,7 +124,6 @@ st.markdown(
         padding: 0.45rem 0.75rem;
     }
 
-    /* WhatsApp link button */
     a.btn-zap {
         display: inline-block;
         margin-top: 0.5rem;
@@ -157,14 +138,12 @@ st.markdown(
         opacity: 0.9;
     }
 
-    /* Responsive columns: stack on mobile */
     @media (max-width: 640px) {
         .stColumns {
             flex-direction: column !important;
         }
     }
 
-    /* Footer styling */
     .rodape-ufo {
         text-align: center;
         font-size: 0.75rem;
@@ -180,7 +159,7 @@ st.markdown(
 
 
 # -----------------------------------------------------------------------------
-# 2. GOOGLE SHEETS CONNECTION HELPERS
+# 2. GOOGLE SHEETS CONNECTION
 # -----------------------------------------------------------------------------
 
 SCOPES: List[str] = [
@@ -190,41 +169,44 @@ SCOPES: List[str] = [
 
 
 def load_credentials() -> Credentials:
-    """Load Google service account credentials.
+    """Load service account credentials.
 
-    First attempt to load from Streamlit secrets under the key
-    `gcp_credentials`. If that fails, fall back to reading the local
-    `credenciais.json` file.
+    Try to load credentials from Streamlit secrets. The app checks both
+    `gcp_service_account` and `gcp_credentials` keys (to support
+    different naming conventions). If neither exists, it attempts to
+    read from a local `credenciais.json` file. If all methods fail,
+    raise a RuntimeError.
     """
     cred_dict: dict
-    try:
-        # st.secrets is provided by Streamlit when deployed. It may throw
-        # KeyError if the key is not present.
-        raw = st.secrets["gcp_credentials"]  # type: ignore[arg-type]
-        cred_dict = json.loads(raw)
-    except Exception:
-        # Attempt to read a local file instead.
+    for key in ("gcp_service_account", "gcp_credentials"):
+        try:
+            raw = st.secrets[key]  # type: ignore[arg-type]
+            if isinstance(raw, dict):
+                cred_dict = dict(raw)
+            else:
+                cred_dict = json.loads(raw)
+            break
+        except Exception:
+            continue
+    else:
+        # Fallback to local file
         try:
             with open("credenciais.json", encoding="utf-8") as f:
                 cred_dict = json.load(f)
         except Exception as exc:
             raise RuntimeError(
-                "Credenciais não encontradas. Verifique se o arquivo "
-                "credenciais.json está presente ou se você configurou "
-                "gcp_credentials em st.secrets." ) from exc
+                "Credenciais não encontradas. Defina-as em 'gcp_service_account' ou 'gcp_credentials'"
+                " no st.secrets ou forneça um arquivo credenciais.json." ) from exc
 
-    # The private_key stored in JSON may contain literal '\n' that need
-    # conversion to actual newlines.
-    if "private_key" in cred_dict:
+    if "private_key" in cred_dict and isinstance(cred_dict["private_key"], str):
         cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
     return Credentials.from_service_account_info(cred_dict, scopes=SCOPES)
 
 
 def open_sheet() -> gspread.Worksheet:
-    """Authorize and return the first worksheet of the loyalty spreadsheet."""
+    """Authorize and return the first worksheet of the loyalty sheet."""
     creds = load_credentials()
     client = gspread.authorize(creds)
-    # Expect the spreadsheet to be named exactly as below. Change if needed.
     return client.open("Barbearia_Fidelidade").sheet1
 
 
@@ -236,7 +218,6 @@ except Exception as err:
 
 
 def get_all_clients() -> List[dict]:
-    """Return all client records from the sheet or an empty list on error."""
     try:
         return PLANILHA.get_all_records()
     except Exception:
@@ -244,37 +225,32 @@ def get_all_clients() -> List[dict]:
 
 
 def find_client(phone: str) -> Tuple[Optional[dict], Optional[int]]:
-    """Find a client by phone number. Returns (record, row) or (None, None)."""
     for idx, record in enumerate(get_all_clients()):
         if str(record.get("Telefone", "")).strip() == str(phone).strip():
-            return record, idx + 2  # +2 to account for header and 0-index
+            return record, idx + 2
     return None, None
 
 
 def add_client(phone: str, name: str, email: str) -> None:
-    """Add a new client to the sheet below the header."""
     PLANILHA.insert_row([str(phone), str(name), str(email), 0], 2)
 
 
 def update_points(row: int, points: int) -> None:
-    """Update the points value for a client at the given row."""
     PLANILHA.update_cell(row, 4, int(points))
 
 
 def update_client(row: int, phone: str, name: str, email: str) -> None:
-    """Update client information for the given row (phone, name, email)."""
     PLANILHA.update_cell(row, 1, str(phone))
     PLANILHA.update_cell(row, 2, str(name))
     PLANILHA.update_cell(row, 3, str(email))
 
 
 def delete_client(row: int) -> None:
-    """Delete a client record entirely."""
     PLANILHA.delete_rows(row)
 
 
 # -----------------------------------------------------------------------------
-# 3. NAVIGATION MANAGEMENT
+# 3. NAVIGATION STATE
 # -----------------------------------------------------------------------------
 
 if "pagina_atual" not in st.session_state:
@@ -282,7 +258,6 @@ if "pagina_atual" not in st.session_state:
 
 
 def mudar_pagina(nova: str) -> None:
-    """Switch pages by updating session state and forcing a rerun."""
     st.session_state["pagina_atual"] = nova
 
 
@@ -291,7 +266,6 @@ def mudar_pagina(nova: str) -> None:
 # -----------------------------------------------------------------------------
 
 def exibir_logo() -> None:
-    """Display the barbershop logo at full container width."""
     try:
         st.image("logo.png", use_container_width=True)
     except Exception:
@@ -299,7 +273,6 @@ def exibir_logo() -> None:
 
 
 def rodape() -> None:
-    """Show a footer with credit information."""
     st.markdown(
         """
         <div class="rodape-ufo">
@@ -312,23 +285,22 @@ def rodape() -> None:
 
 
 # -----------------------------------------------------------------------------
-# 5. PAGE DEFINITIONS
+# 5. PAGES
 # -----------------------------------------------------------------------------
 
 def pagina_inicio() -> None:
-    """Landing page offering client and barber sections."""
     exibir_logo()
     st.title("Cartão Fidelidade")
     st.markdown(
         "<p class='lead'>Bem-vindo! Escolha seu acesso abaixo.</p>",
         unsafe_allow_html=True,
     )
-    col_cliente, col_barbeiro = st.columns(2, gap="medium")
-    with col_cliente:
+    col_cli, col_barb = st.columns(2, gap="medium")
+    with col_cli:
         if st.button("💇‍♂️ Área do Cliente", type="primary"):
             mudar_pagina("cliente")
             st.experimental_rerun()
-    with col_barbeiro:
+    with col_barb:
         if st.button("🔒 Área Restrita", type="primary"):
             mudar_pagina("barbeiro")
             st.experimental_rerun()
@@ -336,15 +308,12 @@ def pagina_inicio() -> None:
 
 
 def pagina_cliente() -> None:
-    """Customer area: check points or register a new card."""
-    # Back button
     back_col, _ = st.columns([1, 5])
     with back_col:
         if st.button("⬅️ Voltar", type="secondary"):
             mudar_pagina("inicio")
             st.experimental_rerun()
 
-    # Tabs for checking points and registering
     aba_consulta, aba_cadastro = st.tabs(["🔍 Meus Pontos", "📝 Cadastrar"])
 
     with aba_consulta:
@@ -401,18 +370,15 @@ def pagina_cliente() -> None:
 
 
 def pagina_barbeiro() -> None:
-    """Restricted area for barbers to manage points and clients."""
     col_back, col_logout = st.columns([1, 1])
     with col_back:
         if st.button("⬅️ Voltar", type="secondary", key="voltar_admin"):
             mudar_pagina("inicio")
             st.experimental_rerun()
 
-    # Authentication state
     if "autenticado" not in st.session_state:
         st.session_state["autenticado"] = False
 
-    # If not authenticated, show login form
     if not st.session_state["autenticado"]:
         senha = st.text_input("Senha de acesso", type="password")
         if st.button("Entrar", type="primary", key="login_admin"):
@@ -424,13 +390,11 @@ def pagina_barbeiro() -> None:
         rodape()
         return
 
-    # If authenticated, show logout button in the top right
     with col_logout:
         if st.button("Sair", type="secondary", key="logout_admin"):
             st.session_state["autenticado"] = False
             st.experimental_rerun()
 
-    # Main admin interface
     st.divider()
     acao = st.selectbox(
         "O que deseja fazer?",
@@ -454,7 +418,6 @@ def pagina_barbeiro() -> None:
                         novos_pontos = pontos_cli + 1
                         update_points(linha, novos_pontos)
                         st.success(f"Total de pontos: {novos_pontos}")
-                        # Compose WhatsApp message
                         if novos_pontos < 10:
                             mensagem = (
                                 f"Fala {nome_cli}, tudo bem? Você ganhou +1 ponto no Cartão Fidelidade! ✂️\n\n"
@@ -509,11 +472,10 @@ def pagina_barbeiro() -> None:
 
 
 # -----------------------------------------------------------------------------
-# 6. ROUTER
+# 6. MAIN ROUTER
 # -----------------------------------------------------------------------------
 
 def main() -> None:
-    """Entry point routing between pages based on session state."""
     pagina = st.session_state.get("pagina_atual", "inicio")
     if pagina == "inicio":
         pagina_inicio()
@@ -522,7 +484,6 @@ def main() -> None:
     elif pagina == "barbeiro":
         pagina_barbeiro()
     else:
-        # Fallback to home if page name is unexpected
         pagina_inicio()
 
 
