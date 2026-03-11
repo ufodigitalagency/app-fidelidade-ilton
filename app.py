@@ -3,9 +3,11 @@ import pandas as pd
 import urllib.parse
 import gspread
 from google.oauth2.service_account import Credentials
+import base64
+import os
 
 # ==========================================
-# 1. CONFIGURAÇÃO E CSS HACKER (APP NATIVO)
+# 1. CONFIGURAÇÃO E CSS HACKER V3 (MAX PREMIUM)
 # ==========================================
 st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
 
@@ -19,29 +21,16 @@ st.markdown("""
         visibility: hidden !important; 
     }
     
-    /* TRAVA O FORMATO DE CELULAR E CENTRALIZA TUDO */
+    /* TRAVA O FORMATO DE CELULAR E CENTRALIZA */
     .block-container {
-        max-width: 450px !important; /* Trava na largura de um iPhone Max */
-        margin: 0 auto !important;   /* Centraliza a div inteira na tela */
-        padding-top: 2rem !important;
-        padding-bottom: 6rem !important; 
+        max-width: 450px !important; 
+        margin: 0 auto !important;   
+        padding-top: 1.5rem !important;
+        padding-bottom: 8rem !important; /* Espaço pro novo rodapé */
     }
     .stApp { background-color: #0E1117; color: #FAFAFA; }
     
-    /* LOGO 100% CENTRALIZADA NATIVA */
-    [data-testid="stImage"] {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        width: 100% !important;
-        margin-bottom: 10px !important;
-    }
-    [data-testid="stImage"] img {
-        max-width: 220px !important; 
-        margin: 0 auto !important;
-    }
-    
-    /* TÍTULO DA HOME (EM PILHA) */
+    /* TÍTULO DA HOME */
     .titulo-app {
         font-family: 'Montserrat', sans-serif;
         color: #D4AF37;
@@ -51,24 +40,18 @@ st.markdown("""
         font-size: 1.6rem;
         font-weight: 800;
         line-height: 1.3;
-        margin-top: 5px;
+        margin-top: 15px;
         margin-bottom: 40px;
     }
     
     /* TEXTOS GERAIS */
     h2, h3, h4, label, p { text-align: center !important; color: #C0C0C0 !important; font-family: 'Montserrat', sans-serif; }
+    p { margin-bottom: 10px !important; }
     
-    /* --- BOTÕES - ESTRUTURA BLINDADA --- */
-    div[data-testid="stButton"] {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-    }
-    
+    /* --- CORREÇÃO DE ALINHAMENTO VERTICAL DOS BOTÕES --- */
     div[data-testid="stButton"] button {
         border-radius: 12px !important; 
         font-weight: 800 !important;
-        font-family: 'Montserrat', sans-serif !important;
         text-transform: uppercase !important;
         font-size: 0.95rem !important;
         border: none !important;
@@ -77,42 +60,47 @@ st.markdown("""
         align-items: center !important;
         justify-content: center !important;
     }
-    
-    /* Centraliza o texto dentro do botão perfeitamente */
-    div[data-testid="stButton"] button p { margin: 0 !important; padding: 0 !important; line-height: 1 !important; color: inherit !important;}
+    div[data-testid="stButton"] button p {
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+    }
     
     /* Botão Principal (Vermelho) */
     div[data-testid="stButton"] button[kind="primary"] { 
         width: 100% !important;
-        min-height: 60px !important;
+        min-height: 65px !important;
         background: linear-gradient(135deg, #ff1a1a 0%, #cc0000 100%) !important;
         color: white !important;
         box-shadow: 0 4px 15px rgba(255, 26, 26, 0.3) !important;
         margin-bottom: 10px !important;
     }
+    div[data-testid="stButton"] button[kind="primary"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 26, 26, 0.5) !important;
+    }
 
     /* Botão Secundário (Preto/Dourado) */
     div[data-testid="stButton"] button[kind="secondary"] { 
         width: 100% !important;
-        min-height: 60px !important;
+        min-height: 65px !important;
         background-color: #1a1c24 !important;  
         color: #D4AF37 !important; 
         border: 1px solid #D4AF37 !important; 
         margin-bottom: 10px !important;
     }
     
-    /* Botão Terciário (Discreto para o "VOLTAR" no topo) */
+    /* Botão Terciário (Discreto para o "VOLTAR") */
     div[data-testid="stButton"] button[kind="tertiary"] { 
         background-color: transparent !important;  
         color: #888888 !important; 
         border: 1px solid #333 !important; 
-        min-height: 35px !important;
-        height: 35px !important;
+        min-height: 40px !important;
         border-radius: 8px !important;
         font-size: 0.75rem !important;
-        padding: 5px 15px !important;
-        margin-bottom: 25px !important;
-        width: auto !important; /* Não toma a tela toda */
+        padding: 0 15px !important;
+        margin-bottom: 20px !important;
+        width: auto !important;
     }
     
     /* ABAS (TABS) OTIMIZADAS */
@@ -128,14 +116,13 @@ st.markdown("""
     [data-baseweb="tab"] {
         background-color: #1a1c24 !important;
         border-radius: 10px !important;
-        padding: 12px !important;
+        padding: 15px !important;
         color: #888 !important;
         font-weight: 600 !important;
         font-family: 'Montserrat', sans-serif;
         border: 1px solid #333 !important;
         transition: 0.3s;
-        flex: 1; /* Estica igual para os dois lados */
-        text-align: center;
+        flex: 1; 
     }
     [aria-selected="true"] {
         background: linear-gradient(135deg, #ff1a1a 0%, #cc0000 100%) !important;
@@ -145,17 +132,35 @@ st.markdown("""
     }
     [data-baseweb="tab-highlight"] { display: none !important; } 
     
-    /* CAIXAS DE TEXTO */
-    [data-testid="stTextInput"] input, [data-testid="stSelectbox"] > div > div { 
-        height: 55px !important; 
+    /* CAIXAS DE TEXTO (Protegendo o olhinho da senha) */
+    div[data-baseweb="input"] {
         border-radius: 12px !important; 
         background-color: #1a1c24 !important; 
-        color: white !important; 
         border: 1px solid #333 !important; 
+        min-height: 55px !important; 
+    }
+    div[data-baseweb="input"] input {
+        color: white !important; 
         text-align: center !important; 
         font-size: 1rem !important; 
+        background-color: transparent !important;
     }
-    [data-testid="stTextInput"] input:focus { border-color: #ff1a1a !important; box-shadow: 0 0 8px rgba(255,26,26,0.4) !important;}
+    div[data-baseweb="input"]:focus-within {
+        border-color: #ff1a1a !important; 
+        box-shadow: 0 0 8px rgba(255,26,26,0.4) !important;
+    }
+
+    /* MENUS SUSPENSOS (SELECTBOX) EM AZUL */
+    div[data-testid="stSelectbox"] > div[data-baseweb="select"] > div {
+        background-color: #0d1f3d !important; /* Fundo azul escuro */
+        border: 1px solid #2b7cff !important; /* Borda azul neon */
+        border-radius: 12px !important;
+        min-height: 55px !important;
+    }
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] * {
+        color: white !important;
+        font-weight: 600 !important;
+    }
     
     /* LINK WHATSAPP */
     .btn-zap { background-color: #25D366 !important; color: white !important; border-radius: 12px; border: none; padding: 18px; font-weight: 800; font-family: 'Montserrat', sans-serif; width: 100%; text-transform: uppercase; text-align: center; display: block; text-decoration: none; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); transition: 0.3s;}
@@ -177,15 +182,28 @@ st.markdown("""
 
     /* TABELAS */
     table { color: #FAFAFA !important; background-color: #1a1c24 !important; border-radius: 8px; width: 100%; text-align: center; }
-    thead tr th { background-color: #ff1a1a !important; color: white !important; text-align: center !important;}
+    thead tr th { background-color: #2b7cff !important; color: white !important; text-align: center !important;}
     
-    /* RODAPÉ NO FIM DA TELA */
-    .rodape-ufo { position: fixed; left: 0; bottom: 20px; width: 100%; background-color: transparent; color: #555; text-align: center; padding: 10px; font-size: 0.65rem; z-index: 999; }
+    /* RODAPÉ PREMIUM COM INSTAGRAM E MAIS ALTO */
+    .rodape-ufo { 
+        position: fixed; 
+        left: 0; 
+        bottom: 55px; /* Subiu os 30px que você pediu */
+        width: 100%; 
+        background-color: transparent; 
+        color: #777; 
+        text-align: center; 
+        padding: 10px; 
+        z-index: 999; 
+    }
+    .rodape-ufo p { margin: 0 !important; font-size: 0.75rem !important; line-height: 1.4 !important; }
+    .rodape-ufo img { width: 22px; margin-top: 8px; opacity: 0.7; transition: 0.3s; }
+    .rodape-ufo img:hover { opacity: 1; }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CONEXÃO COM GOOGLE SHEETS
+# 2. CONEXÃO COM GOOGLE SHEETS E BASE64 LOGO
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
@@ -215,6 +233,21 @@ def add_client(telefone, nome, email):
 def update_points(linha, pontos):
     planilha.update_cell(linha, 4, int(pontos)) 
 
+# FUNÇÃO HACKER PARA A LOGO NÃO ESCAPAR PARA A ESQUERDA
+def exibir_logo_blindada():
+    try:
+        with open("logo.png", "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode()
+        # Injeta a logo direto no HTML forçando centralização absoluta
+        st.markdown(
+            f'<div style="display: flex; justify-content: center; width: 100%;">'
+            f'<img src="data:image/png;base64,{encoded_string}" style="max-width: 220px; width: 100%;">'
+            f'</div>', 
+            unsafe_allow_html=True
+        )
+    except Exception:
+        pass # Se a logo não for encontrada, o app não trava
+
 # NAVEGAÇÃO
 if 'pagina_atual' not in st.session_state:
     st.session_state['pagina_atual'] = 'inicio'
@@ -226,26 +259,24 @@ def mudar_pagina(nova_pagina):
 # TELA 1: INÍCIO (COM LOGO E TÍTULO)
 # ==========================================
 if st.session_state['pagina_atual'] == 'inicio':
-    try: st.image("logo.png")
-    except Exception: pass
+    exibir_logo_blindada()
     
     st.markdown("<div class='titulo-app'>CARTÃO<br>FIDELIDADE</div>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 1.1rem; color: #aaa; margin-bottom: 25px !important;'>Selecione seu acesso:</p>", unsafe_allow_html=True)
     
-    if st.button("💇‍♂️ ÁREA DO CLIENTE", type="primary", use_container_width=True):
+    if st.button("💇‍♂️ ÁREA DO CLIENTE", type="primary"):
         mudar_pagina('cliente')
         st.rerun()
         
-    if st.button("🔒 ÁREA RESTRITA", type="secondary", use_container_width=True):
+    if st.button("🔒 ÁREA RESTRITA", type="secondary"):
         mudar_pagina('barbeiro')
         st.rerun()
 
 # ==========================================
-# TELA 2: ÁREA DO CLIENTE (CLEAN E FOCADA)
+# TELA 2: ÁREA DO CLIENTE
 # ==========================================
 elif st.session_state['pagina_atual'] == 'cliente':
     
-    # Botão de voltar discreto (Tertiary)
     if st.button("⬅️ Voltar", type="tertiary"):
         mudar_pagina('inicio')
         st.rerun()
@@ -257,7 +288,7 @@ elif st.session_state['pagina_atual'] == 'cliente':
         telefone_busca = st.text_input("", placeholder="Ex: 35999999999", label_visibility="collapsed", key="busca_cli")
         
         st.write("")
-        if st.button("BUSCAR PONTOS", type="primary", use_container_width=True):
+        if st.button("BUSCAR PONTOS", type="primary"):
             if telefone_busca:
                 cliente, _ = find_client(telefone_busca)
                 if cliente:
@@ -282,7 +313,7 @@ elif st.session_state['pagina_atual'] == 'cliente':
         novo_email = st.text_input("", placeholder="Seu e-mail", label_visibility="collapsed") 
         
         st.write("")
-        if st.button("CRIAR CARTÃO", type="primary", use_container_width=True):
+        if st.button("CRIAR CARTÃO", type="primary"):
             if novo_nome and novo_telefone and novo_email:
                 cliente_existente, _ = find_client(novo_telefone)
                 if cliente_existente:
@@ -295,7 +326,7 @@ elif st.session_state['pagina_atual'] == 'cliente':
                 st.warning("Preencha todos os campos.")
 
 # ==========================================
-# TELA 3: ÁREA DO BARBEIRO (PAINEL MODERNO)
+# TELA 3: ÁREA DO BARBEIRO
 # ==========================================
 elif st.session_state['pagina_atual'] == 'barbeiro':
     
@@ -311,7 +342,7 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
         senha = st.text_input("", type="password", placeholder="Digite a senha", label_visibility="collapsed")
         
         st.write("")
-        if st.button("ENTRAR", type="primary", use_container_width=True):
+        if st.button("ENTRAR", type="primary"):
             if senha == "barba123":
                 st.session_state['autenticado'] = True
                 st.rerun()
@@ -320,27 +351,29 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                 
     if st.session_state['autenticado']:
         
-        acao = st.selectbox("Selecione a ação:", ["Adicionar Pontos", "Editar/Excluir", "Ver Todos"])
+        # AÇÃO PRINCIPAL (Menu Suspenso 1)
+        st.markdown("<p style='color: #888 !important; text-align: left !important; font-size: 0.8rem !important; margin-bottom: 5px !important;'>Selecione o que deseja fazer:</p>", unsafe_allow_html=True)
+        acao = st.selectbox("Selecione a ação:", ["Adicionar Pontos", "Editar/Excluir", "Ver Todos"], label_visibility="collapsed")
         st.write("---")
 
         if acao == "Adicionar Pontos":
             registros = get_all_clients()
             registros_validos = [r for r in registros if str(r.get('Telefone', '')).strip() != '']
             
-            # USO DO GET() PARA EVITAR O ERRO KEYERROR: 'NOME'
-            opcoes_clientes = [""] + [f"{reg.get('Nome', 'Sem Nome')} - {reg.get('Telefone', '')}" for reg in registros_validos]
+            # FORMATANDO A LISTA (Nome de um lado, Telefone do outro usando separador)
+            opcoes_clientes = [""] + [f"👤 {str(reg.get('Nome', 'Sem Nome')).upper()}   ➖   📱 {reg.get('Telefone', '')}" for reg in registros_validos]
             
-            cliente_selecionado = st.selectbox("Buscar cliente:", opcoes_clientes)
+            st.markdown("<p style='color: #888 !important; text-align: left !important; font-size: 0.8rem !important; margin-bottom: 5px !important;'>Buscar Cliente Cadastrado:</p>", unsafe_allow_html=True)
+            cliente_selecionado = st.selectbox("Buscar cliente:", opcoes_clientes, label_visibility="collapsed")
 
             if cliente_selecionado != "":
-                telefone_cli = cliente_selecionado.split(" - ")[-1]
+                telefone_cli = cliente_selecionado.split("📱 ")[-1].strip()
                 cliente, linha = find_client(telefone_cli)
                 
                 if cliente:
                     cli_nome = cliente.get('Nome', 'Sem Nome')
                     cli_pontos = int(cliente.get('Pontos', 0))
                     
-                    # CARD DASHBOARD PREMIUM EM HTML
                     st.markdown(f"""
                         <div class="client-card">
                             <h3>{cli_nome}</h3>
@@ -349,7 +382,7 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    if st.button("➕ ADICIONAR 1 PONTO", type="primary", use_container_width=True):
+                    if st.button("➕ ADICIONAR 1 PONTO", type="primary"):
                         novos_pontos = cli_pontos + 1
                         update_points(linha, novos_pontos)
                         st.success(f"Ponto Adicionado!")
@@ -358,7 +391,7 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                         msg_encoded = urllib.parse.quote(msg)
                         st.markdown(f'<a href="https://wa.me/55{telefone_cli}?text={msg_encoded}" target="_blank" class="btn-zap">📱 AVISAR NO WHATSAPP</a>', unsafe_allow_html=True)
                         
-                    if st.button("🔄 ZERAR PONTOS", type="secondary", use_container_width=True):
+                    if st.button("🔄 ZERAR PONTOS", type="secondary"):
                         update_points(linha, 0)
                         st.success("Pontos Zerados!")
                         st.rerun()
@@ -366,11 +399,13 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
         elif acao == "Editar/Excluir":
             registros = get_all_clients()
             registros_validos = [r for r in registros if str(r.get('Telefone', '')).strip() != '']
-            opcoes_clientes = [""] + [f"{reg.get('Nome', 'Sem Nome')} - {reg.get('Telefone', '')}" for reg in registros_validos]
-            cliente_selecionado = st.selectbox("Cliente:", opcoes_clientes)
+            opcoes_clientes = [""] + [f"👤 {str(reg.get('Nome', 'Sem Nome')).upper()}   ➖   📱 {reg.get('Telefone', '')}" for reg in registros_validos]
+            
+            st.markdown("<p style='color: #888 !important; text-align: left !important; font-size: 0.8rem !important; margin-bottom: 5px !important;'>Selecione quem deseja editar:</p>", unsafe_allow_html=True)
+            cliente_selecionado = st.selectbox("Cliente:", opcoes_clientes, label_visibility="collapsed")
 
             if cliente_selecionado != "":
-                telefone_cli = cliente_selecionado.split(" - ")[-1]
+                telefone_cli = cliente_selecionado.split("📱 ")[-1].strip()
                 cliente, linha = find_client(telefone_cli)
 
                 if cliente:
@@ -380,13 +415,13 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                     novo_email = st.text_input("E-mail", value=str(cliente.get('Email', '')))
 
                     st.write("")
-                    if st.button("💾 SALVAR", type="primary", use_container_width=True):
+                    if st.button("💾 SALVAR", type="primary"):
                         planilha.update_cell(linha, 1, str(novo_telefone))
                         planilha.update_cell(linha, 2, str(novo_nome))
                         planilha.update_cell(linha, 3, str(novo_email))
                         st.success("Atualizado!")
                             
-                    if st.button("🗑️ EXCLUIR CLIENTE", type="secondary", use_container_width=True):
+                    if st.button("🗑️ EXCLUIR CLIENTE", type="secondary"):
                         planilha.delete_rows(linha)
                         st.success("Removido!")
                         st.rerun()
@@ -404,11 +439,14 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
             st.rerun()
 
 # ==========================================
-# 6. RODAPÉ 
+# 6. RODAPÉ (COM INSTAGRAM E MAIS ALTO)
 # ==========================================
 st.markdown("""
     <div class="rodape-ufo">
-        Desenvolvido por UFO Digital Agency<br>
-        Ilton Cabeleireiro - +55 35 8702-2576
+        <p>Desenvolvido por <strong>UFO Digital Agency</strong></p>
+        <p>Ilton Cabeleireiro - +55 35 8702-2576</p>
+        <a href="http://www.instagram.com/mkt.ufo" target="_blank">
+            <img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" alt="Instagram">
+        </a>
     </div>
 """, unsafe_allow_html=True)
