@@ -3,10 +3,10 @@ import pandas as pd
 import urllib.parse
 import gspread
 from google.oauth2.service_account import Credentials
-import json 
+import os
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA E CSS
+# 1. CONFIGURAÇÃO DA PÁGINA E CSS (BLINDADO PARA MOBILE)
 # ==========================================
 st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
 
@@ -14,20 +14,34 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
     
-    /* REMOVER MARCAS DO STREAMLIT */
-    header { visibility: hidden !important; }
-    footer { visibility: hidden !important; }
-    a[href^="https://streamlit.io/cloud"] { display: none !important; }
+    /* 1. ANIQUILAR MARCAS DO STREAMLIT DE VEZ */
+    header { visibility: hidden !important; display: none !important; }
+    footer { visibility: hidden !important; display: none !important; }
+    .viewerBadge_container, .viewerBadge_link, #viewerBadge { display: none !important; visibility: hidden !important; }
+    [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
     
-    /* OTIMIZAÇÃO DE ESPAÇO NO TOPO */
+    /* 2. ESPAÇAMENTO E TRAVA DE TELA (Evita quebrar o layout para os lados) */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 5rem !important;
         margin-top: -30px !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important; 
     }
-    .stApp { background-color: #0E1117; color: #FAFAFA; }
+    .stApp { background-color: #0E1117; color: #FAFAFA; overflow-x: hidden !important; }
     
-    /* TÍTULOS E TEXTOS */
+    /* 3. LOGO CENTRALIZADA E PEQUENA VIA CSS */
+    [data-testid="stImage"] {
+        display: flex;
+        justify-content: center;
+        margin-bottom: -15px;
+    }
+    [data-testid="stImage"] img {
+        max-width: 160px !important; 
+        height: auto;
+    }
+    
+    /* 4. TÍTULOS E TEXTOS */
     h1 { 
         font-family: 'Montserrat', sans-serif !important; 
         color: #D4AF37 !important; 
@@ -36,27 +50,27 @@ st.markdown("""
         letter-spacing: 2px; 
         font-size: 1.8rem !important; 
         line-height: 1.1;
-        margin-top: -10px !important;
+        margin-top: 0px !important;
     }
     h2, h3 { color: #C0C0C0 !important; text-align: center; }
     h4 { color: #C0C0C0 !important; text-align: center; font-size: 1rem !important; margin-bottom: 20px;}
     
-    /* BOTÕES LADO A LADO NO CELULAR */
-    @media (max-width: 768px) {
-        div[data-testid="stHorizontalBlock"] {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            gap: 10px !important;
-        }
-        div[data-testid="column"] {
-            width: 50% !important;
-            min-width: 45% !important;
-            flex: 1 1 50% !important;
-        }
+    /* 5. BOTÕES LADO A LADO SEM QUEBRAR A TELA */
+    div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+    div[data-testid="column"] {
+        width: 50% !important;
+        min-width: 48% !important;
+        flex: 1 1 50% !important;
     }
     
-    /* BOTÕES PRINCIPAIS (Vermelho Animado para AMBOS) */
+    /* 6. BOTÕES PRINCIPAIS (Vermelho Animado) */
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(255, 51, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0); } }
     
     div[data-testid="stButton"] button[kind="primary"] { 
@@ -66,7 +80,7 @@ st.markdown("""
         border: none !important; 
         font-weight: 800 !important; 
         text-transform: uppercase; 
-        font-size: 0.70rem !important; 
+        font-size: 0.65rem !important; 
         animation: pulse 2s infinite; 
         padding: 15px 2px !important; 
         width: 100%;
@@ -82,7 +96,7 @@ st.markdown("""
         transform: scale(1.02);
     }
 
-    /* Botões Discretos (Voltar, Sair) */
+    /* 7. Botões Discretos (Voltar, Sair) */
     div[data-testid="stButton"] button[kind="secondary"] { 
         background-color: #1A1A1A !important;  
         color: #AAAAAA !important; 
@@ -104,24 +118,17 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CONEXÃO COM GOOGLE SHEETS (BLINDADA)
+# 2. CONEXÃO COM GOOGLE SHEETS (NATIVA TOML)
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 try:
-    # 1. Lê o JSON do Cofre Secreto
-    cred_dict = json.loads(st.secrets["gcp_credentials"])
-    
-    # 2. Limpa qualquer erro de quebra de linha que o Streamlit possa ter causado
-    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
-    
-    # 3. Faz a conexão oficial
+    cred_dict = dict(st.secrets["gcp_service_account"])
     credentials = Credentials.from_service_account_info(cred_dict, scopes=scopes)
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
-    
 except Exception as e:
-    st.error(f"⚠️ Erro detalhado de conexão: {e}")
+    st.error(f"⚠️ Erro de conexão com a planilha: {e}")
     st.stop()
 
 def get_all_clients():
@@ -151,13 +158,11 @@ def mudar_pagina(nova_pagina):
 # ==========================================
 # 3. INTERFACE GERAL (LOGO)
 # ==========================================
-col_espaco_esq, col_logo, col_espaco_dir = st.columns([1.2, 1, 1.2])
-
-with col_logo:
-    try:
-        st.image("logo.png", use_container_width=True)
-    except Exception as e:
-        pass
+# Renderiza a logo solta. O CSS lá em cima garante que ela fique no meio e pequena!
+try:
+    st.image("logo.png")
+except Exception:
+    pass
 
 st.title("Cartão Fidelidade")
 
