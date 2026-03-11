@@ -5,7 +5,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA E CSS (CAMISA DE FORÇA MOBILE)
+# 1. CONFIGURAÇÃO DA PÁGINA E CSS (LAYOUT EMPILHADO)
 # ==========================================
 st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
 
@@ -13,13 +13,13 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
     
-    /* 1. LIMPEZA DA TELA (Adeus Coroa) */
+    /* LIMPEZA DA TELA */
     header, footer, [data-testid="stToolbar"], .viewerBadge_container { 
         display: none !important; 
         visibility: hidden !important; 
     }
     
-    /* 2. FUNDO E ESPAÇAMENTOS GERAIS */
+    /* FUNDO E ESPAÇAMENTOS GERAIS */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 5rem !important;
@@ -29,91 +29,74 @@ st.markdown("""
     }
     .stApp { background-color: #0E1117; color: #FAFAFA; overflow-x: hidden !important; }
     
-    /* 3. LOGO FORÇADA NO CENTRO */
+    /* LOGO MAIOR E IMPONENTE */
     [data-testid="stImage"] {
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
         margin: 0 auto !important;
+        margin-bottom: 5px !important;
     }
     [data-testid="stImage"] img {
-        max-width: 170px !important;
+        max-width: 240px !important; /* Logo aumentada para melhor proporção */
         margin: 0 auto !important;
     }
     
-    /* 4. TEXTOS E TÍTULOS */
+    /* TÍTULO STACKED (QUEBRADO EM DUAS LINHAS) */
     h1 { 
         font-family: 'Montserrat', sans-serif !important; 
         color: #D4AF37 !important; 
         text-align: center; 
         text-transform: uppercase; 
         letter-spacing: 2px; 
-        font-size: 1.8rem !important; 
-        line-height: 1.1;
-        margin-top: -10px !important;
+        font-size: 1.5rem !important; /* Menor para não brigar com a logo */
+        line-height: 1.3 !important;
+        margin-top: 0px !important;
+        margin-bottom: 20px !important;
     }
     h2, h3 { color: #C0C0C0 !important; text-align: center; }
     h4 { color: #C0C0C0 !important; text-align: center; font-size: 1rem !important; margin-bottom: 15px !important; }
     
-    /* 5. SUPER HACK: BOTÕES LADO A LADO SEM COLAR NA TELA */
-    @media (max-width: 768px) {
-        div[data-testid="stHorizontalBlock"] {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            justify-content: center !important;
-            align-items: center !important;
-            gap: 12px !important;
-            padding: 0 20px !important; /* Desgruda das bordas do celular */
-            box-sizing: border-box !important;
-        }
-        /* Atacando o nome antigo e o novo do Streamlit */
-        div[data-testid="column"], div[data-testid="stColumn"] {
-            width: 50% !important;
-            min-width: 0 !important;
-            flex: 1 1 50% !important;
-        }
-    }
-    
-    /* 6. BOTÕES PRINCIPAIS (Vermelho Animado) */
+    /* BOTÕES PRINCIPAIS (EMPILHADOS, MAIS ALTOS E GORDOS) */
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(255, 51, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0); } }
     
     div[data-testid="stButton"] button[kind="primary"] { 
         background-color: #ff1a1a !important; 
         color: white !important; 
-        border-radius: 8px !important; 
+        border-radius: 12px !important; /* Bordas mais redondas e modernas */
         border: none !important; 
         font-weight: 800 !important; 
         text-transform: uppercase; 
-        font-size: 0.75rem !important; 
+        font-size: 0.9rem !important; /* Fonte maior para melhor leitura */
         animation: pulse 2s infinite; 
-        padding: 15px 5px !important; 
+        padding: 22px 10px !important; /* Botão mais alto (não espremido) */
         width: 100%;
         text-align: center;
         display: flex;
         justify-content: center;
         align-items: center;
         transition: 0.2s !important;
+        margin-bottom: 5px !important;
     }
     div[data-testid="stButton"] button[kind="primary"]:hover {
         background-color: #ff3333 !important;
         transform: scale(1.02);
     }
 
-    /* 7. Botões Discretos (Voltar, Sair) */
+    /* Botões Discretos (Voltar, Sair) */
     div[data-testid="stButton"] button[kind="secondary"] { 
         background-color: #1A1A1A !important;  
         color: #AAAAAA !important; 
         border: 1px solid #444 !important; 
-        border-radius: 8px !important; 
+        border-radius: 10px !important; 
         font-weight: bold !important; 
         text-transform: uppercase; 
-        padding: 10px !important; 
+        padding: 12px !important; 
         width: 100%;
     }
     
     .btn-zap { background-color: #25D366 !important; color: white !important; border-radius: 8px; border: none; padding: 12px; font-weight: bold; width: 100%; text-transform: uppercase; text-align: center; display: block; text-decoration: none; margin-top: 15px; }
-    .stTextInput>div>div>input, .stSelectbox>div>div>div { background-color: #1a1c24 !important; color: white !important; border: 1px solid #444 !important; text-align: center; }
+    .stTextInput>div>div>input, .stSelectbox>div>div>div { background-color: #1a1c24 !important; color: white !important; border: 1px solid #444 !important; text-align: center; height: 45px; }
     table { color: #FAFAFA !important; background-color: #1a1c24 !important; border-radius: 8px; width: 100%; }
     thead tr th { background-color: #2b7cff !important; color: white !important; }
     
@@ -122,7 +105,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CONEXÃO COM GOOGLE SHEETS (NATIVA TOML)
+# 2. CONEXÃO COM GOOGLE SHEETS E FUNÇÕES BLINDADAS
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
@@ -132,7 +115,7 @@ try:
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
 except Exception as e:
-    st.error(f"⚠️ Erro de conexão com a planilha: {e}")
+    st.error(f"⚠️ Erro de conexão com a planilha.")
     st.stop()
 
 def get_all_clients():
@@ -160,34 +143,34 @@ def mudar_pagina(nova_pagina):
     st.session_state['pagina_atual'] = nova_pagina
 
 # ==========================================
-# 3. INTERFACE GERAL (LOGO ESPREMIDA NO CENTRO)
+# 3. INTERFACE GERAL (LOGO E TÍTULO)
 # ==========================================
-# Colunas 1 e 3 vazias servem de "paredes" para forçar a logo no meio
-col_vazia_esq, col_logo, col_vazia_dir = st.columns([1, 1.2, 1])
+col_vazia_esq, col_logo, col_vazia_dir = st.columns([1, 2, 1])
 
 with col_logo:
     try:
-        st.image("logo.png", use_container_width=True)
+        st.image("logo.png")
     except Exception:
         pass
 
-# Título usando HTML para obedecer perfeitamente o CSS
-st.markdown("<h1>Cartão Fidelidade</h1>", unsafe_allow_html=True)
+st.markdown("<h1>Cartão<br>Fidelidade</h1>", unsafe_allow_html=True)
 
 # ==========================================
-# TELA 1: INÍCIO
+# TELA 1: INÍCIO (BOTÕES EMPILHADOS)
 # ==========================================
 if st.session_state['pagina_atual'] == 'inicio':
     st.markdown("<h4>Selecione seu acesso:</h4>", unsafe_allow_html=True)
     
-    col_cli, col_barb = st.columns(2)
+    # Criamos uma coluna central para empilhar os botões com perfeição
+    col_esq, col_meio, col_dir = st.columns([1, 8, 1])
     
-    with col_cli:
+    with col_meio:
         if st.button("💇‍♂️ ÁREA DO CLIENTE", type="primary"):
             mudar_pagina('cliente')
             st.rerun()
             
-    with col_barb:
+        st.write("") # Espaço mínimo entre botões
+        
         if st.button("🔒 ÁREA RESTRITA", type="primary"):
             mudar_pagina('barbeiro')
             st.rerun()
@@ -196,7 +179,7 @@ if st.session_state['pagina_atual'] == 'inicio':
 # TELA 2: ÁREA DO CLIENTE
 # ==========================================
 elif st.session_state['pagina_atual'] == 'cliente':
-    col_voltar, col_vazia = st.columns([1, 1])
+    col_voltar, col_vazia = st.columns([2, 1])
     with col_voltar:
         if st.button("⬅️ Voltar", type="secondary"):
             mudar_pagina('inicio')
@@ -212,8 +195,8 @@ elif st.session_state['pagina_atual'] == 'cliente':
             if telefone_busca:
                 cliente, _ = find_client(telefone_busca)
                 if cliente:
-                    nome = cliente['Nome']
-                    pontos = int(cliente['Pontos'])
+                    nome = cliente.get('Nome', 'Cliente')
+                    pontos = int(cliente.get('Pontos', 0))
                     st.success(f"Olá, {nome}!")
                     st.info(f"Você tem **{pontos} ponto(s)** de 10.")
                     progresso = pontos / 10 if pontos <= 10 else 1.0
@@ -245,7 +228,7 @@ elif st.session_state['pagina_atual'] == 'cliente':
                 st.warning("Preencha todos os campos.")
 
 # ==========================================
-# TELA 3: ÁREA DO BARBEIRO
+# TELA 3: ÁREA DO BARBEIRO (COM PROTEÇÃO DE KeyError)
 # ==========================================
 elif st.session_state['pagina_atual'] == 'barbeiro':
     col_voltar, col_sair = st.columns([1, 1])
@@ -278,7 +261,13 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
 
         if acao == "Gerenciar Pontos":
             registros = get_all_clients()
-            opcoes_clientes = [""] + [f"{reg['Nome']} - {reg['Telefone']}" for reg in registros]
+            
+            # FILTRO ANTI-ERRO: Só carrega clientes que possuem telefone preenchido
+            registros_validos = [r for r in registros if str(r.get('Telefone', '')).strip() != '']
+            
+            # Monta a lista usando .get() para evitar qualquer KeyError
+            opcoes_clientes = [""] + [f"{reg.get('Nome', 'Sem Nome')} - {reg.get('Telefone', '')}" for reg in registros_validos]
+            
             cliente_selecionado = st.selectbox("Buscar cliente:", opcoes_clientes)
 
             if cliente_selecionado != "":
@@ -286,8 +275,8 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                 cliente, linha = find_client(telefone_cli)
                 
                 if cliente:
-                    cli_nome = cliente['Nome']
-                    cli_pontos = int(cliente['Pontos'])
+                    cli_nome = cliente.get('Nome', 'Sem Nome')
+                    cli_pontos = int(cliente.get('Pontos', 0))
                     st.write(f"👤 **{cli_nome}** | ⭐ **{cli_pontos}/10 Pontos**")
                     
                     col1, col2 = st.columns(2)
@@ -309,7 +298,8 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
 
         elif acao == "Editar/Excluir":
             registros = get_all_clients()
-            opcoes_clientes = [""] + [f"{reg['Nome']} - {reg['Telefone']}" for reg in registros]
+            registros_validos = [r for r in registros if str(r.get('Telefone', '')).strip() != '']
+            opcoes_clientes = [""] + [f"{reg.get('Nome', 'Sem Nome')} - {reg.get('Telefone', '')}" for reg in registros_validos]
             cliente_selecionado = st.selectbox("Cliente:", opcoes_clientes)
 
             if cliente_selecionado != "":
@@ -317,9 +307,9 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                 cliente, linha = find_client(telefone_cli)
 
                 if cliente:
-                    novo_nome = st.text_input("Nome", value=cliente['Nome'])
-                    novo_telefone = st.text_input("WhatsApp", value=cliente['Telefone'])
-                    novo_email = st.text_input("E-mail", value=cliente['Email'])
+                    novo_nome = st.text_input("Nome", value=str(cliente.get('Nome', '')))
+                    novo_telefone = st.text_input("WhatsApp", value=str(cliente.get('Telefone', '')))
+                    novo_email = st.text_input("E-mail", value=str(cliente.get('Email', '')))
 
                     col_s, col_e = st.columns(2)
                     with col_s:
