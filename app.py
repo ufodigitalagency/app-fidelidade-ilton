@@ -3,10 +3,9 @@ import pandas as pd
 import urllib.parse
 import gspread
 from google.oauth2.service_account import Credentials
-import os # Biblioteca nova para checar arquivos com segurança
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA E CSS (EXTREMO MOBILE)
+# 1. CONFIGURAÇÃO DA PÁGINA E CSS (SEGURO)
 # ==========================================
 st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
 
@@ -14,14 +13,12 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
     
-    /* 1. ANIQUILAÇÃO TOTAL DAS MARCAS DO STREAMLIT */
-    header, footer { visibility: hidden !important; display: none !important; }
-    [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
-    #viewerBadge, .viewerBadge_container, .viewerBadge_link { display: none !important; visibility: hidden !important; opacity: 0 !important; }
-    iframe[title="Streamlit Community Cloud badge"] { display: none !important; }
-    [data-testid="stAppViewContainer"] > div:last-child { display: none !important; }
+    /* 1. REMOVER MARCAS DO STREAMLIT DE FORMA SEGURA */
+    header { visibility: hidden !important; }
+    footer { visibility: hidden !important; }
+    a[href^="https://streamlit.io/cloud"] { display: none !important; }
     
-    /* 2. OTIMIZAÇÃO DE ESPAÇO NO TOPO DA TELA */
+    /* 2. OTIMIZAÇÃO DE ESPAÇO E FUNDO */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 5rem !important;
@@ -49,7 +46,6 @@ st.markdown("""
             display: flex !important;
             flex-direction: row !important;
             flex-wrap: nowrap !important;
-            justify-content: center !important;
             gap: 10px !important;
         }
         div[data-testid="column"] {
@@ -59,7 +55,7 @@ st.markdown("""
         }
     }
     
-    /* 5. BOTÃO: ÁREA DO CLIENTE */
+    /* 5. BOTÃO: ÁREA DO CLIENTE (Vermelho Pulso) */
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(255, 51, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0); } }
     
     div[data-testid="stButton"] button[kind="primary"] { 
@@ -104,7 +100,7 @@ st.markdown("""
         transform: translate(2px, 2px);
     }
 
-    /* 7. Botões Discretos */
+    /* 7. Botões Discretos (Voltar, Sair) */
     div[data-testid="stButton"] button[kind="tertiary"] { 
         background-color: #1A1A1A !important;  
         color: #AAAAAA !important; 
@@ -136,7 +132,7 @@ try:
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
 except Exception as e:
-    st.error("⚠️ Erro de conexão com a planilha. Verifique as credenciais.")
+    st.error("⚠️ Erro de conexão com a planilha. Verifique o arquivo credenciais.json.")
     st.stop()
 
 def get_all_clients():
@@ -169,13 +165,11 @@ def mudar_pagina(nova_pagina):
 col_espaco_esq, col_logo, col_espaco_dir = st.columns([1.2, 1, 1.2])
 
 with col_logo:
-    # Verificação segura: só tenta desenhar a imagem se ela existir no servidor com o nome exato!
-    if os.path.exists("logo.jpg"):
-        st.image("logo.jpg", use_container_width=True)
-    elif os.path.exists("logo.png"):
+    # TRY/EXCEPT: Se a logo falhar, o app não tela preta, ele mostra um aviso!
+    try:
         st.image("logo.png", use_container_width=True)
-    elif os.path.exists("Logo.jpg"): # Tenta com L maiúsculo só por garantia
-        st.image("Logo.jpg", use_container_width=True)
+    except Exception as e:
+        st.warning(f"Atenção: A imagem 'logo.png' não foi encontrada no GitHub.")
 
 st.title("Cartão Fidelidade")
 
