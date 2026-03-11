@@ -169,37 +169,53 @@ SCOPES: List[str] = [
 
 
 def load_credentials() -> Credentials:
-    """Load service account credentials.
+    """Load Google service account credentials.
 
-    Try to load credentials from Streamlit secrets. The app checks both
-    `gcp_service_account` and `gcp_credentials` keys (to support
-    different naming conventions). If neither exists, it attempts to
-    read from a local `credenciais.json` file. If all methods fail,
-    raise a RuntimeError.
+    This function tries to obtain credentials in the following order:
+
+    1. A `gcp_service_account` section inside `st.secrets`. This is
+       expected to be a mapping of service account fields, as seen in
+       the original app.
+    2. A `gcp_credentials` entry inside `st.secrets`. If this entry is a
+       string it will be parsed as JSON; if it is already a mapping it
+       will be used directly.
+    3. A local `credenciais.json` file located in the same folder as this
+       script.
+
+    If none of these sources are available a RuntimeError is raised.
     """
-    cred_dict: dict
-    for key in ("gcp_service_account", "gcp_credentials"):
+    cred_dict: dict | None = None
+    # 1. Look for gcp_service_account in st.secrets
+    try:
+        sa = st.secrets["gcp_service_account"]  # type: ignore[arg-type]
+        if isinstance(sa, dict):
+            cred_dict = dict(sa)
+    except Exception:
+        cred_dict = None
+    # 2. If not found, look for gcp_credentials in st.secrets
+    if cred_dict is None:
         try:
-            raw = st.secrets[key]  # type: ignore[arg-type]
+            raw = st.secrets["gcp_credentials"]  # type: ignore[arg-type]
             if isinstance(raw, dict):
                 cred_dict = dict(raw)
             else:
                 cred_dict = json.loads(raw)
-            break
         except Exception:
-            continue
-    else:
-        # Fallback to local file
+            cred_dict = None
+    # 3. If still not found, read local file
+    if cred_dict is None:
         try:
             with open("credenciais.json", encoding="utf-8") as f:
                 cred_dict = json.load(f)
         except Exception as exc:
             raise RuntimeError(
-                "Credenciais não encontradas. Defina-as em 'gcp_service_account' ou 'gcp_credentials'"
-                " no st.secrets ou forneça um arquivo credenciais.json." ) from exc
-
+                "Credenciais não encontradas. Defina-as em 'gcp_service_account' ou 'gcp_credentials' "
+                "no st.secrets, ou forneça um arquivo credenciais.json." ) from exc
+    # Normalize newline encoding if necessary
     if "private_key" in cred_dict and isinstance(cred_dict["private_key"], str):
-        cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+        pk = cred_dict["private_key"]
+        # Replace escaped newline sequences with actual newlines
+        cred_dict["private_key"] = pk.replace("\\n", "\n")
     return Credentials.from_service_account_info(cred_dict, scopes=SCOPES)
 
 
