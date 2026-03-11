@@ -3,7 +3,7 @@ import pandas as pd
 import urllib.parse
 import gspread
 from google.oauth2.service_account import Credentials
-import os
+import json 
 
 # ==========================================
 # 1. CONFIGURAÇÃO DA PÁGINA E CSS
@@ -104,16 +104,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CONEXÃO COM GOOGLE SHEETS (VIA COFRE SECRETO)
+# 2. CONEXÃO COM GOOGLE SHEETS (BLINDADA)
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 try:
-    # O Streamlit já transforma o TOML em um dicionário perfeito sozinho!
-    cred_dict = dict(st.secrets["gcp_service_account"])
+    # 1. Lê o JSON do Cofre Secreto
+    cred_dict = json.loads(st.secrets["gcp_credentials"])
+    
+    # 2. Limpa qualquer erro de quebra de linha que o Streamlit possa ter causado
+    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+    
+    # 3. Faz a conexão oficial
     credentials = Credentials.from_service_account_info(cred_dict, scopes=scopes)
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
+    
 except Exception as e:
     st.error(f"⚠️ Erro detalhado de conexão: {e}")
     st.stop()
@@ -331,6 +337,4 @@ st.markdown("""
         Desenvolvido por UFO Digital Agency<br>
         Ilton Cabeleireiro - +55 35 8702-2576
     </div>
-
 """, unsafe_allow_html=True)
-
