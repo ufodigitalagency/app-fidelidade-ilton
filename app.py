@@ -110,13 +110,12 @@ st.markdown("""
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 try:
-    # Lendo do cofre invisível do Streamlit
     cred_dict = json.loads(st.secrets["gcp_credentials"])
     credentials = Credentials.from_service_account_info(cred_dict, scopes=scopes)
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
 except Exception as e:
-    st.error("⚠️ Erro de conexão com a planilha. O cofre secreto não foi configurado corretamente.")
+    st.error(f"⚠️ Erro detalhado de conexão: {e}")
     st.stop()
 
 def get_all_clients():
