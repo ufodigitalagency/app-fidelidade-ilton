@@ -110,12 +110,8 @@ st.markdown("""
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 try:
-    cred_dict = json.loads(st.secrets["gcp_credentials"])
-    
-    # ---> A MÁGICA QUE CONSERTA O ERRO JWT <---
-    # Isso força o Streamlit a ler as quebras de linha da chave corretamente
-    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
-    
+    # O Streamlit já transforma o TOML em um dicionário perfeito sozinho!
+    cred_dict = dict(st.secrets["gcp_service_account"])
     credentials = Credentials.from_service_account_info(cred_dict, scopes=scopes)
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
@@ -336,4 +332,5 @@ st.markdown("""
         Desenvolvido por UFO Digital Agency<br>
         Ilton Cabeleireiro - +55 35 8702-2576
     </div>
+
 """, unsafe_allow_html=True)
