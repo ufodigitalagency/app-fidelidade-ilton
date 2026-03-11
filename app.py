@@ -7,7 +7,7 @@ import base64
 import os
 
 # ==========================================
-# 1. CONFIGURAÇÃO E CSS HACKER V3 (MAX PREMIUM)
+# 1. CONFIGURAÇÃO E CSS HACKER (MAX PREMIUM + WHITE LABEL)
 # ==========================================
 st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
 
@@ -15,18 +15,21 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap');
     
-    /* ANIQUILAR MARCAS DO STREAMLIT DE VEZ */
-    header, footer, [data-testid="stToolbar"], .viewerBadge_container, #viewerBadge { 
-        display: none !important; 
-        visibility: hidden !important; 
-    }
+    /* 1. MODO ASSASSINO DE MARCAS D'ÁGUA (WHITE LABEL TOTAL) */
+    header, footer, [data-testid="stToolbar"] { display: none !important; visibility: hidden !important; }
+    iframe[title="Streamlit Community Cloud badge"] { display: none !important; } /* Coroa */
+    img[src*="avatars.githubusercontent.com"] { display: none !important; } /* Seu Avatar do Github */
+    a[href^="https://share.streamlit.io/user/"] { display: none !important; } /* Link do perfil */
+    .stDeployButton { display: none !important; }
+    div[style*="bottom: 1.5rem"][style*="right: 1.5rem"] { display: none !important; opacity: 0 !important; pointer-events: none !important; } /* Fundo da bolinha */
+    div[style*="bottom: 1rem"][style*="right: 1rem"] { display: none !important; }
     
     /* TRAVA O FORMATO DE CELULAR E CENTRALIZA */
     .block-container {
         max-width: 450px !important; 
         margin: 0 auto !important;   
         padding-top: 1.5rem !important;
-        padding-bottom: 8rem !important; /* Espaço pro novo rodapé */
+        padding-bottom: 6rem !important; 
     }
     .stApp { background-color: #0E1117; color: #FAFAFA; }
     
@@ -48,7 +51,14 @@ st.markdown("""
     h2, h3, h4, label, p { text-align: center !important; color: #C0C0C0 !important; font-family: 'Montserrat', sans-serif; }
     p { margin-bottom: 10px !important; }
     
-    /* --- CORREÇÃO DE ALINHAMENTO VERTICAL DOS BOTÕES --- */
+    /* --- BOTÕES CRAVADOS NO CENTRO (FIM DO BUG DA ESQUERDA) --- */
+    div.stButton {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+    
     div[data-testid="stButton"] button {
         border-radius: 12px !important; 
         font-weight: 800 !important;
@@ -59,7 +69,9 @@ st.markdown("""
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        margin: 0 auto !important; /* Mágica do centro absoluto */
     }
+    
     div[data-testid="stButton"] button p {
         margin: 0 !important;
         padding: 0 !important;
@@ -69,6 +81,7 @@ st.markdown("""
     /* Botão Principal (Vermelho) */
     div[data-testid="stButton"] button[kind="primary"] { 
         width: 100% !important;
+        max-width: 400px !important;
         min-height: 65px !important;
         background: linear-gradient(135deg, #ff1a1a 0%, #cc0000 100%) !important;
         color: white !important;
@@ -83,6 +96,7 @@ st.markdown("""
     /* Botão Secundário (Preto/Dourado) */
     div[data-testid="stButton"] button[kind="secondary"] { 
         width: 100% !important;
+        max-width: 400px !important;
         min-height: 65px !important;
         background-color: #1a1c24 !important;  
         color: #D4AF37 !important; 
@@ -152,8 +166,8 @@ st.markdown("""
 
     /* MENUS SUSPENSOS (SELECTBOX) EM AZUL */
     div[data-testid="stSelectbox"] > div[data-baseweb="select"] > div {
-        background-color: #0d1f3d !important; /* Fundo azul escuro */
-        border: 1px solid #2b7cff !important; /* Borda azul neon */
+        background-color: #0d1f3d !important; 
+        border: 1px solid #2b7cff !important; 
         border-radius: 12px !important;
         min-height: 55px !important;
     }
@@ -163,7 +177,7 @@ st.markdown("""
     }
     
     /* LINK WHATSAPP */
-    .btn-zap { background-color: #25D366 !important; color: white !important; border-radius: 12px; border: none; padding: 18px; font-weight: 800; font-family: 'Montserrat', sans-serif; width: 100%; text-transform: uppercase; text-align: center; display: block; text-decoration: none; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); transition: 0.3s;}
+    .btn-zap { background-color: #25D366 !important; color: white !important; border-radius: 12px; border: none; padding: 18px; font-weight: 800; font-family: 'Montserrat', sans-serif; width: 100%; max-width: 400px; text-transform: uppercase; text-align: center; display: block; text-decoration: none; margin: 15px auto; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); transition: 0.3s;}
     
     /* CARD DASHBOARD DO CLIENTE NO BARBEIRO */
     .client-card {
@@ -184,26 +198,23 @@ st.markdown("""
     table { color: #FAFAFA !important; background-color: #1a1c24 !important; border-radius: 8px; width: 100%; text-align: center; }
     thead tr th { background-color: #2b7cff !important; color: white !important; text-align: center !important;}
     
-    /* RODAPÉ PREMIUM COM INSTAGRAM E MAIS ALTO */
-    .rodape-ufo { 
+    /* CONFIGURAÇÕES BASE DOS RODAPÉS */
+    .rodape-container { 
         position: fixed; 
         left: 0; 
-        bottom: 55px; /* Subiu os 30px que você pediu */
+        bottom: 15px; 
         width: 100%; 
         background-color: transparent; 
-        color: #777; 
         text-align: center; 
         padding: 10px; 
         z-index: 999; 
     }
-    .rodape-ufo p { margin: 0 !important; font-size: 0.75rem !important; line-height: 1.4 !important; }
-    .rodape-ufo img { width: 22px; margin-top: 8px; opacity: 0.7; transition: 0.3s; }
-    .rodape-ufo img:hover { opacity: 1; }
+    .rodape-container p { margin: 0 !important; line-height: 1.4 !important; }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CONEXÃO COM GOOGLE SHEETS E BASE64 LOGO
+# 2. CONEXÃO COM GOOGLE SHEETS E FUNÇÕES
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
@@ -233,12 +244,11 @@ def add_client(telefone, nome, email):
 def update_points(linha, pontos):
     planilha.update_cell(linha, 4, int(pontos)) 
 
-# FUNÇÃO HACKER PARA A LOGO NÃO ESCAPAR PARA A ESQUERDA
+# FUNÇÃO HACKER DA LOGO CENTRALIZADA
 def exibir_logo_blindada():
     try:
         with open("logo.png", "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode()
-        # Injeta a logo direto no HTML forçando centralização absoluta
         st.markdown(
             f'<div style="display: flex; justify-content: center; width: 100%;">'
             f'<img src="data:image/png;base64,{encoded_string}" style="max-width: 220px; width: 100%;">'
@@ -246,7 +256,25 @@ def exibir_logo_blindada():
             unsafe_allow_html=True
         )
     except Exception:
-        pass # Se a logo não for encontrada, o app não trava
+        pass 
+
+# FUNÇÕES DE RODAPÉ INTELIGENTE
+def exibir_rodape_home():
+    st.markdown("""
+        <div class="rodape-container">
+            <p style="font-size: 0.65rem; color: #666;">Desenvolvido por <strong>UFO Digital Agency</strong></p>
+            <a href="http://www.instagram.com/mkt.ufo" target="_blank">
+                <img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" alt="Instagram" style="width: 18px; opacity: 0.6; margin-top: 5px; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+            </a>
+        </div>
+    """, unsafe_allow_html=True)
+
+def exibir_rodape_interno():
+    st.markdown("""
+        <div class="rodape-container">
+            <p style="font-size: 0.75rem; color: #777; font-weight: 600;">Ilton Cabeleireiro - +55 35 8702-2576</p>
+        </div>
+    """, unsafe_allow_html=True)
 
 # NAVEGAÇÃO
 if 'pagina_atual' not in st.session_state:
@@ -256,12 +284,13 @@ def mudar_pagina(nova_pagina):
     st.session_state['pagina_atual'] = nova_pagina
 
 # ==========================================
-# TELA 1: INÍCIO (COM LOGO E TÍTULO)
+# TELA 1: INÍCIO
 # ==========================================
 if st.session_state['pagina_atual'] == 'inicio':
     exibir_logo_blindada()
     
-    st.markdown("<div class='titulo-app'>CARTÃO<br>FIDELIDADE</div>", unsafe_allow_html=True)
+    # NOVO TÍTULO
+    st.markdown("<div class='titulo-app'>SISTEMA<br>FIDELIDADE</div>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 1.1rem; color: #aaa; margin-bottom: 25px !important;'>Selecione seu acesso:</p>", unsafe_allow_html=True)
     
     if st.button("💇‍♂️ ÁREA DO CLIENTE", type="primary"):
@@ -271,6 +300,8 @@ if st.session_state['pagina_atual'] == 'inicio':
     if st.button("🔒 ÁREA RESTRITA", type="secondary"):
         mudar_pagina('barbeiro')
         st.rerun()
+        
+    exibir_rodape_home() # Chama o rodapé exclusivo da UFO
 
 # ==========================================
 # TELA 2: ÁREA DO CLIENTE
@@ -324,6 +355,8 @@ elif st.session_state['pagina_atual'] == 'cliente':
                     st.balloons()
             else:
                 st.warning("Preencha todos os campos.")
+                
+    exibir_rodape_interno() # Chama o rodapé exclusivo do Ilton
 
 # ==========================================
 # TELA 3: ÁREA DO BARBEIRO
@@ -351,7 +384,6 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                 
     if st.session_state['autenticado']:
         
-        # AÇÃO PRINCIPAL (Menu Suspenso 1)
         st.markdown("<p style='color: #888 !important; text-align: left !important; font-size: 0.8rem !important; margin-bottom: 5px !important;'>Selecione o que deseja fazer:</p>", unsafe_allow_html=True)
         acao = st.selectbox("Selecione a ação:", ["Adicionar Pontos", "Editar/Excluir", "Ver Todos"], label_visibility="collapsed")
         st.write("---")
@@ -360,7 +392,6 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
             registros = get_all_clients()
             registros_validos = [r for r in registros if str(r.get('Telefone', '')).strip() != '']
             
-            # FORMATANDO A LISTA (Nome de um lado, Telefone do outro usando separador)
             opcoes_clientes = [""] + [f"👤 {str(reg.get('Nome', 'Sem Nome')).upper()}   ➖   📱 {reg.get('Telefone', '')}" for reg in registros_validos]
             
             st.markdown("<p style='color: #888 !important; text-align: left !important; font-size: 0.8rem !important; margin-bottom: 5px !important;'>Buscar Cliente Cadastrado:</p>", unsafe_allow_html=True)
@@ -437,16 +468,5 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
         if st.button("SAIR DO SISTEMA", type="tertiary"):
             st.session_state['autenticado'] = False
             st.rerun()
-
-# ==========================================
-# 6. RODAPÉ (COM INSTAGRAM E MAIS ALTO)
-# ==========================================
-st.markdown("""
-    <div class="rodape-ufo">
-        <p>Desenvolvido por <strong>UFO Digital Agency</strong></p>
-        <p>Ilton Cabeleireiro - +55 35 8702-2576</p>
-        <a href="http://www.instagram.com/mkt.ufo" target="_blank">
-            <img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" alt="Instagram">
-        </a>
-    </div>
-""", unsafe_allow_html=True)
+            
+    exibir_rodape_interno() # Chama o rodapé exclusivo do Ilton
