@@ -6,25 +6,25 @@ from google.oauth2.service_account import Credentials
 import base64
 
 # ==========================================
-# 1. CONFIGURAÇÃO E CSS (APP NATIVO SEGURO)
+# 1. CONFIGURAÇÃO E CSS HACKER (CENTRO ABSOLUTO)
 # ==========================================
-st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
+st.set_page_config(page_title="Sistema Fidelidade", page_icon="✂️", layout="centered")
 
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap');
     
-    /* REMOÇÃO SEGURA DOS ELEMENTOS PADRÕES DO STREAMLIT */
+    /* REMOÇÃO SEGURA E ESTÁVEL DO CABEÇALHO PADRÃO */
     header { visibility: hidden !important; display: none !important; }
     footer { visibility: hidden !important; display: none !important; }
-    [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
+    [data-testid="stToolbar"] { display: none !important; }
     
-    /* TRAVA O FORMATO DE CELULAR E CENTRALIZA */
+    /* TRAVA O FORMATO DE CELULAR E CENTRALIZA O APP INTEIRO */
     .block-container {
         max-width: 450px !important; 
         margin: 0 auto !important;   
         padding-top: 1.5rem !important;
-        padding-bottom: 7rem !important; /* Espaço pro novo rodapé */
+        padding-bottom: 7rem !important; 
     }
     .stApp { background-color: #0E1117; color: #FAFAFA; }
     
@@ -46,11 +46,14 @@ st.markdown("""
     h2, h3, h4, label, p { text-align: center !important; color: #C0C0C0 !important; font-family: 'Montserrat', sans-serif; }
     p { margin-bottom: 10px !important; }
     
-    /* --- BOTÕES CRAVADOS NO CENTRO ABSOLUTO --- */
-    div[data-testid="stButton"] {
-        display: flex;
-        justify-content: center;
-        width: 100%;
+    /* ========================================================
+       A MÁGICA QUE PRENDE OS BOTÕES NO CENTRO 
+       ======================================================== */
+    div.stButton {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        margin: 0 auto !important;
     }
     
     div[data-testid="stButton"] button {
@@ -64,8 +67,8 @@ st.markdown("""
         align-items: center !important;
         justify-content: center !important;
         width: 100% !important;
-        max-width: 350px !important; /* Impede que o botão estique demais e bugue */
-        margin: 0 auto !important;
+        max-width: 350px !important; /* Impede de esticar na tela toda */
+        margin: 0 auto !important;   /* CRAVADO NO CENTRO */
     }
     div[data-testid="stButton"] button p { margin: 0 !important; padding: 0 !important; line-height: 1 !important; }
     
@@ -103,7 +106,7 @@ st.markdown("""
     /* ABAS (TABS) OTIMIZADAS */
     [data-baseweb="tabs"] { width: 100%; margin-top: 5px; }
     [data-baseweb="tab-list"] { display: flex; justify-content: center; gap: 10px; background-color: transparent !important; border-bottom: none !important; margin-bottom: 25px; }
-    [data-baseweb="tab"] { background-color: #1a1c24 !important; border-radius: 10px !important; padding: 15px !important; color: #888 !important; font-weight: 600 !important; font-family: 'Montserrat', sans-serif; border: 1px solid #333 !important; transition: 0.3s; flex: 1; }
+    [data-baseweb="tab"] { background-color: #1a1c24 !important; border-radius: 10px !important; padding: 15px !important; color: #888 !important; font-weight: 600 !important; font-family: 'Montserrat', sans-serif; border: 1px solid #333 !important; transition: 0.3s; flex: 1; text-align: center; }
     [aria-selected="true"] { background: linear-gradient(135deg, #ff1a1a 0%, #cc0000 100%) !important; color: white !important; border: none !important; box-shadow: 0 4px 10px rgba(255, 26, 26, 0.3) !important; }
     [data-baseweb="tab-highlight"] { display: none !important; } 
     
@@ -208,7 +211,7 @@ def mudar_pagina(nova_pagina):
     st.session_state['pagina_atual'] = nova_pagina
 
 # ==========================================
-# TELA 1: INÍCIO
+# TELA 1: INÍCIO (O FIM DO BUG DA ESQUERDA)
 # ==========================================
 if st.session_state['pagina_atual'] == 'inicio':
     exibir_logo_blindada()
@@ -216,13 +219,14 @@ if st.session_state['pagina_atual'] == 'inicio':
     st.markdown("<div class='titulo-app'>SISTEMA<br>FIDELIDADE</div>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 1.1rem; color: #aaa; margin-bottom: 20px !important;'>Selecione seu acesso:</p>", unsafe_allow_html=True)
     
-    if st.button("💇‍♂️ ÁREA DO CLIENTE", type="primary"):
+    # ATENÇÃO AQUI: FIM DAS COLUNAS. OS BOTÕES AGORA ESTÃO LIVRES!
+    if st.button("💇‍♂️ ÁREA DO CLIENTE", type="primary", use_container_width=True):
         mudar_pagina('cliente')
         st.rerun()
         
     st.write("") 
     
-    if st.button("🔒 ÁREA RESTRITA", type="secondary"):
+    if st.button("🔒 ÁREA RESTRITA", type="secondary", use_container_width=True):
         mudar_pagina('barbeiro')
         st.rerun()
         
@@ -244,7 +248,7 @@ elif st.session_state['pagina_atual'] == 'cliente':
         telefone_busca = st.text_input("", placeholder="Ex: 35999999999", label_visibility="collapsed", key="busca_cli")
         
         st.write("")
-        if st.button("BUSCAR PONTOS", type="primary"):
+        if st.button("BUSCAR PONTOS", type="primary", use_container_width=True):
             if telefone_busca:
                 cliente, _ = find_client(telefone_busca)
                 if cliente:
@@ -269,7 +273,7 @@ elif st.session_state['pagina_atual'] == 'cliente':
         novo_email = st.text_input("", placeholder="Seu e-mail", label_visibility="collapsed") 
         
         st.write("")
-        if st.button("CRIAR CARTÃO", type="primary"):
+        if st.button("CRIAR CARTÃO", type="primary", use_container_width=True):
             if novo_nome and novo_telefone and novo_email:
                 cliente_existente, _ = find_client(novo_telefone)
                 if cliente_existente:
@@ -300,7 +304,7 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
         senha = st.text_input("", type="password", placeholder="Digite a senha", label_visibility="collapsed")
         
         st.write("")
-        if st.button("ENTRAR", type="primary"):
+        if st.button("ENTRAR", type="primary", use_container_width=True):
             if senha == "barba123":
                 st.session_state['autenticado'] = True
                 st.rerun()
@@ -338,7 +342,7 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    if st.button("➕ ADICIONAR 1 PONTO", type="primary"):
+                    if st.button("➕ ADICIONAR 1 PONTO", type="primary", use_container_width=True):
                         novos_pontos = cli_pontos + 1
                         update_points(linha, novos_pontos)
                         st.success(f"Ponto Adicionado!")
@@ -347,7 +351,7 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                         msg_encoded = urllib.parse.quote(msg)
                         st.markdown(f'<a href="https://wa.me/55{telefone_cli}?text={msg_encoded}" target="_blank" class="btn-zap">📱 AVISAR NO WHATSAPP</a>', unsafe_allow_html=True)
                         
-                    if st.button("🔄 ZERAR PONTOS", type="secondary"):
+                    if st.button("🔄 ZERAR PONTOS", type="secondary", use_container_width=True):
                         update_points(linha, 0)
                         st.success("Pontos Zerados!")
                         st.rerun()
@@ -371,13 +375,13 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                     novo_email = st.text_input("E-mail", value=str(cliente.get('Email', '')))
 
                     st.write("")
-                    if st.button("💾 SALVAR", type="primary"):
+                    if st.button("💾 SALVAR", type="primary", use_container_width=True):
                         planilha.update_cell(linha, 1, str(novo_telefone))
                         planilha.update_cell(linha, 2, str(novo_nome))
                         planilha.update_cell(linha, 3, str(novo_email))
                         st.success("Atualizado!")
                             
-                    if st.button("🗑️ EXCLUIR CLIENTE", type="secondary"):
+                    if st.button("🗑️ EXCLUIR CLIENTE", type="secondary", use_container_width=True):
                         planilha.delete_rows(linha)
                         st.success("Removido!")
                         st.rerun()
