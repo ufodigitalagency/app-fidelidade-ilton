@@ -14,9 +14,12 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
     
-    /* 1. DESTRUIR MARCAS D'ÁGUA E CABEÇALHOS DO STREAMLIT */
-    [data-testid="collapsedControl"], [data-testid="stToolbar"], header, footer {display: none !important;}
-    .viewerBadge_container, .viewerBadge_link, [data-testid="viewerBadge"], #viewerBadge { display: none !important; }
+    /* 1. ANIQUILAÇÃO TOTAL DAS MARCAS DO STREAMLIT (Coroa e Perfil) */
+    header, footer { visibility: hidden !important; display: none !important; }
+    [data-testid="stToolbar"] { visibility: hidden !important; display: none !important; }
+    #viewerBadge, .viewerBadge_container, .viewerBadge_link { display: none !important; visibility: hidden !important; opacity: 0 !important; }
+    iframe[title="Streamlit Community Cloud badge"] { display: none !important; }
+    [data-testid="stAppViewContainer"] > div:last-child { display: none !important; }
     
     /* 2. OTIMIZAÇÃO DE ESPAÇO NO TOPO DA TELA */
     .block-container {
@@ -26,38 +29,37 @@ st.markdown("""
     }
     .stApp { background-color: #0E1117; color: #FAFAFA; }
     
-    /* 3. FORÇAR A LOGO A FICAR PEQUENA E CENTRALIZADA */
-    [data-testid="stImage"] {
-        display: flex;
-        justify-content: center;
-        margin-bottom: -20px;
-    }
-    [data-testid="stImage"] img {
-        max-width: 140px !important; /* Tamanho exato pedido no desenho */
-        height: auto;
-    }
-    
-    /* 4. TÍTULOS E TEXTOS AJUSTADOS */
+    /* 3. TÍTULOS E TEXTOS AJUSTADOS */
     h1 { 
         font-family: 'Montserrat', sans-serif !important; 
         color: #D4AF37 !important; 
         text-align: center; 
         text-transform: uppercase; 
         letter-spacing: 2px; 
-        font-size: 2rem !important; 
+        font-size: 1.8rem !important; 
         line-height: 1.1;
+        margin-top: -10px !important;
     }
     h2, h3 { color: #C0C0C0 !important; text-align: center; }
     h4 { color: #C0C0C0 !important; text-align: center; font-size: 1rem !important; margin-bottom: 20px;}
     
-    /* 5. HACK PARA FORÇAR BOTÕES LADO A LADO NO CELULAR */
-    [data-testid="stHorizontalBlock"] {
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 10px !important;
+    /* 4. HACK CIRÚRGICO PARA BOTÕES LADO A LADO NO CELULAR SEM QUEBRAR TUDO */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"] {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            justify-content: center !important;
+            gap: 10px !important;
+        }
+        div[data-testid="column"] {
+            width: 50% !important;
+            min-width: 45% !important;
+            flex: 1 1 50% !important;
+        }
     }
     
-    /* 6. BOTÃO: ÁREA DO CLIENTE (Vermelho Pulso) */
+    /* 5. BOTÃO: ÁREA DO CLIENTE (Vermelho Pulso) */
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(255, 51, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0); } }
     
     div[data-testid="stButton"] button[kind="primary"] { 
@@ -67,37 +69,51 @@ st.markdown("""
         border: none !important; 
         font-weight: 800 !important; 
         text-transform: uppercase; 
-        font-size: 0.75rem !important; /* Fonte menor para caber os dois */
+        font-size: 0.70rem !important; 
         animation: pulse 2s infinite; 
-        padding: 15px 5px !important; 
+        padding: 15px 2px !important; 
         width: 100%;
         height: 100%;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     
-    /* 7. BOTÃO: ÁREA RESTRITA (Fundo Preto com Contorno Glitch Fino) */
+    /* 6. BOTÃO: ÁREA RESTRITA (Fundo Preto com Contorno Glitch Fino) */
     div[data-testid="stButton"] button[kind="secondary"] { 
         background-color: #050505 !important; 
         color: #FFFFFF !important; 
-        border: 1px solid #000000 !important; 
-        border-radius: 4px !important; /* Cantos mais secos pro glitch */
+        border: 1px solid #111111 !important; 
+        border-radius: 4px !important; 
         font-weight: 800 !important; 
         text-transform: uppercase; 
-        font-size: 0.75rem !important;
-        /* O VERDADEIRO EFEITO GLITCH (Linha fina Azul e Vermelha separadas) */
+        font-size: 0.70rem !important;
         box-shadow: -2px -2px 0px 0px #2b7cff, 2px 2px 0px 0px #ff3333 !important; 
         transition: 0.1s !important; 
-        padding: 15px 5px !important; 
+        padding: 15px 2px !important; 
         width: 100%;
         height: 100%;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     div[data-testid="stButton"] button[kind="secondary"]:active {
         box-shadow: 2px 2px 0px 0px #2b7cff, -2px -2px 0px 0px #ff3333 !important;
         transform: translate(2px, 2px);
     }
 
-    /* 8. Botões Discretos (Voltar, Sair) */
+    /* 7. Botões Discretos (Voltar, Sair) */
     div[data-testid="stButton"] button[kind="tertiary"] { 
-        background-color: #1A1A1A !important;  color: #AAAAAA !important; border: 1px solid #444 !important; border-radius: 6px !important; font-weight: bold !important; text-transform: uppercase; padding: 8px !important; width: 100%;
+        background-color: #1A1A1A !important;  
+        color: #AAAAAA !important; 
+        border: 1px solid #444 !important; 
+        border-radius: 6px !important; 
+        font-weight: bold !important; 
+        text-transform: uppercase; 
+        padding: 8px !important; 
+        width: 100%;
     }
     
     .btn-zap { background-color: #25D366 !important; color: white !important; border-radius: 6px; border: none; padding: 10px; font-weight: bold; width: 100%; text-transform: uppercase; text-align: center; display: block; text-decoration: none; margin-top: 15px; }
@@ -105,13 +121,13 @@ st.markdown("""
     table { color: #FAFAFA !important; background-color: #1a1c24 !important; border-radius: 8px; width: 100%; }
     thead tr th { background-color: #2b7cff !important; color: white !important; }
     
-    /* 9. Rodapé Fixo e Limpo */
+    /* 8. Rodapé Fixo e Limpo */
     .rodape-ufo { position: fixed; left: 0; bottom: 0; width: 100%; background-color: #0E1117; color: #444; text-align: center; padding: 5px; font-size: 0.65rem; border-top: 1px solid #1A1A1A; z-index: 999; }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CONEXÃO COM GOOGLE SHEETS
+# 2. CONEXÃO COM GOOGLE SHEETS E FUNÇÕES
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
@@ -120,7 +136,7 @@ try:
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
 except Exception as e:
-    st.error("⚠️ Erro de conexão com a planilha.")
+    st.error("⚠️ Erro de conexão com a planilha. Verifique as credenciais.")
     st.stop()
 
 def get_all_clients():
@@ -148,13 +164,17 @@ def mudar_pagina(nova_pagina):
     st.session_state['pagina_atual'] = nova_pagina
 
 # ==========================================
-# 3. INTERFACE (LOGO DIRETA SEM COLUNAS)
+# 3. INTERFACE GERAL (LOGO CENTRALIZADA)
 # ==========================================
-try:
-    # Chama a imagem diretamente, o CSS cuida de diminuir e centralizar
-    st.image("logo.png")
-except FileNotFoundError:
-    pass
+# Colunas para empurrar a logo perfeitamente para o centro
+col_espaco_esq, col_logo, col_espaco_dir = st.columns([1.2, 1, 1.2])
+
+with col_logo:
+    try:
+        # Puxando o arquivo logo.jpg que você enviou
+        st.image("logo.jpg", use_container_width=True)
+    except FileNotFoundError:
+        pass
 
 st.title("Cartão Fidelidade")
 
@@ -164,7 +184,6 @@ st.title("Cartão Fidelidade")
 if st.session_state['pagina_atual'] == 'inicio':
     st.markdown("<h4>Selecione seu acesso:</h4>", unsafe_allow_html=True)
     
-    # Apenas duas colunas, divididas 50/50
     col_cli, col_barb = st.columns(2)
     
     with col_cli:
@@ -173,7 +192,6 @@ if st.session_state['pagina_atual'] == 'inicio':
             st.rerun()
             
     with col_barb:
-        # Botão com o novo Glitch
         if st.button("ÁREA RESTRITA", type="secondary"):
             mudar_pagina('barbeiro')
             st.rerun()
