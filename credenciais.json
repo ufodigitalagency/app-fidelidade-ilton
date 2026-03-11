@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "atomic-athlete-489905-k9",
+  "private_key_id": "7e7c65781bce20236ed0098bff6b32e927095954",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDNYpUMbk4g22vl\nr1SXXAVVjL8+5UfbQi406IxivlzxtqOL4chzBsx4hDgaX6YNOjz205UqdZrXSAS3\nJ4IGIhQnVJ74Vg1qQeEZJwct4dyxzMZcT2rmgSIdg+UTS3d8nwSzfdyqPY+2nvK7\napIdPVrRzlCHFD5cV5WpER92DsFHh4dBI84r+De2uKw3WjDT/fu+zO/1ehdw+br1\nd89gXHJKKGXN9prkYrXbjtg1u+gFqsTZ+BvGi7FPvR+pLOPEJ6/6VBj+nEbXDdUp\nuk5gKERkzUl7noAC68eyvFsO4JqHulLP8ehtodJPevrzM/L9CPgPZkHGAXw9YLX4\n/SgzBX6nAgMBAAECggEAGd9vLEjhpwpNKNAx+qaZIMJME0BvPA6LDezfm87O8ZTS\n5xuzFH5zl+5RYk0l+L5F5h1tnz1/xdqThtO/cZtYaO35irTNwtLNaE2Tfh2uShL5\nnVupzqN6KI1aza1GPkOKpDvY5knpW+rhDr1UQ8Jcua0Lqus2Fzbh/7whok3QiPyE\nFu4cOWi8H2IDBjER1o5FHmCeSfEbXKbuQuMOR3T9Wlg1h6LdhSbZ+sB6p5u45Mvo\nBpdAVfnRJbrN9f3yZcmRlEHkkh/3OCCQoX7pY9pNKQOkmy/C3piGR/hpAESe9zHG\n+a8oIFcCk6kq1XkGTTJYewUkaW42qEun9AxRLL79NQKBgQDrWwIYxFrBxj92KXBP\nZmZPNaK9yrcivHozfspJnMFg3L4l3M8ub2pH8QWATHCo5++R49Xq6c1NpOlDCz9w\nvNQq73C17x/p531HVLkfLjr7fix3Y8g0C0BoF4Ug7OySPmTD+MaMyQ0mSrT01O0B\nhufsewzun3/kYJ4QVHRvs1btlQKBgQDfZpPjEwaGxKDuO44VoxwNvMFjPbii3FsD\nqbfWhmcBd+jRzMTX2pllG0hveERc1PibONg7pWoz8vmpBnhQPYOyApQvwa9Eo0pu\nULi4qEUEdKMd4gQNk+8sA4GojZhVVnF3JWjlEncNGxJCFtw0MJVDqYy317sQhAKC\n7CkC9/VUSwKBgDzNZy5E0/mJoO2C6RvqJXZDMgb8LvHPZXaWQ+Zek+rVPF6FvBSP\n/hIV50js9pH8UX0MMkCdJEfx2b1TU5FphxqMfz7RRxpjjo72CVlP1TcRsqUpZxhi\n68G4idEmxDtH2Tpzs7+9VSNWW4eA1rX1R0dlxsKC/ERg3ZT0bJxK5aM9AoGBAK4U\nRJDhNmi1t6FsDt+VZjreJuOqKMHfa5yDF5m2yXU/dtBk+84nrPg4Nk2GLd8YpVBv\nDzALSaKJZznqrL358TE5CTfdeTHG/CzSAd8CYCWErcaPZBEggXKOmO46x8VXwrrR\nD9fQd6xit+t/3L9eTDGZYOmw1TedZkeWtq51gVnZAoGAZIIJHTEO8mYCRi2rXF5d\nRU3VFNu0XIKq/0OEO8havEOL7DFQ6rgdfrS30Bf0W9YOmzgHqWKUDVURyzlVM3hE\nTFLJUaBdSZAHUJu8QjWn8tEkiylQ/bL49y0gwC+in8jSpmbPujdb5wjak70XjRVW\nBAnGUzUChLZXGGFElAIMpS0=\n-----END PRIVATE KEY-----\n",
+  "client_email": "robo-barbeiro@atomic-athlete-489905-k9.iam.gserviceaccount.com",
+  "client_id": "109068711892809925798",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/robo-barbeiro%40atomic-athlete-489905-k9.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
