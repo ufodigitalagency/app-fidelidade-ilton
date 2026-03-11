@@ -3,9 +3,10 @@ import pandas as pd
 import urllib.parse
 import gspread
 from google.oauth2.service_account import Credentials
+import os
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA E CSS (SEGURO)
+# 1. CONFIGURAÇÃO DA PÁGINA E CSS (SEGURO E OTIMIZADO)
 # ==========================================
 st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
 
@@ -55,11 +56,11 @@ st.markdown("""
         }
     }
     
-    /* 5. BOTÃO: ÁREA DO CLIENTE (Vermelho Pulso) */
+    /* 5. BOTÕES PRINCIPAIS (Vermelho Pulso Padrão para ambos) */
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(255, 51, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 51, 51, 0); } }
     
     div[data-testid="stButton"] button[kind="primary"] { 
-        background: linear-gradient(45deg, #ff1a1a, #e60000) !important; 
+        background-color: #ff1a1a !important; /* Cor sólida para não dar bug no mobile */
         color: white !important; 
         border-radius: 6px !important; 
         border: none !important; 
@@ -74,34 +75,15 @@ st.markdown("""
         display: flex;
         justify-content: center;
         align-items: center;
+        transition: 0.2s !important;
     }
-    
-    /* 6. BOTÃO: ÁREA RESTRITA (Contorno Glitch) */
-    div[data-testid="stButton"] button[kind="secondary"] { 
-        background-color: #050505 !important; 
-        color: #FFFFFF !important; 
-        border: 1px solid #111111 !important; 
-        border-radius: 4px !important; 
-        font-weight: 800 !important; 
-        text-transform: uppercase; 
-        font-size: 0.70rem !important;
-        box-shadow: -2px -2px 0px 0px #2b7cff, 2px 2px 0px 0px #ff3333 !important; 
-        transition: 0.1s !important; 
-        padding: 15px 2px !important; 
-        width: 100%;
-        height: 100%;
-        text-align: center;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    div[data-testid="stButton"] button[kind="secondary"]:active {
-        box-shadow: 2px 2px 0px 0px #2b7cff, -2px -2px 0px 0px #ff3333 !important;
-        transform: translate(2px, 2px);
+    div[data-testid="stButton"] button[kind="primary"]:hover {
+        background-color: #ff3333 !important;
+        transform: scale(1.02);
     }
 
-    /* 7. Botões Discretos (Voltar, Sair) */
-    div[data-testid="stButton"] button[kind="tertiary"] { 
+    /* 6. Botões Discretos (Voltar, Sair - Estilo "Secondary") */
+    div[data-testid="stButton"] button[kind="secondary"] { 
         background-color: #1A1A1A !important;  
         color: #AAAAAA !important; 
         border: 1px solid #444 !important; 
@@ -117,7 +99,7 @@ st.markdown("""
     table { color: #FAFAFA !important; background-color: #1a1c24 !important; border-radius: 8px; width: 100%; }
     thead tr th { background-color: #2b7cff !important; color: white !important; }
     
-    /* 8. Rodapé Fixo e Limpo */
+    /* 7. Rodapé Fixo e Limpo */
     .rodape-ufo { position: fixed; left: 0; bottom: 0; width: 100%; background-color: #0E1117; color: #444; text-align: center; padding: 5px; font-size: 0.65rem; border-top: 1px solid #1A1A1A; z-index: 999; }
     </style>
 """, unsafe_allow_html=True)
@@ -132,7 +114,7 @@ try:
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
 except Exception as e:
-    st.error("⚠️ Erro de conexão com a planilha. Verifique o arquivo credenciais.json.")
+    st.error("⚠️ Erro de conexão com a planilha. O Google revogou a chave antiga ou ela não foi encontrada.")
     st.stop()
 
 def get_all_clients():
@@ -165,11 +147,11 @@ def mudar_pagina(nova_pagina):
 col_espaco_esq, col_logo, col_espaco_dir = st.columns([1.2, 1, 1.2])
 
 with col_logo:
-    # TRY/EXCEPT: Se a logo falhar, o app não tela preta, ele mostra um aviso!
     try:
+        # Corrigido aviso do width
         st.image("logo.png", use_container_width=True)
     except Exception as e:
-        st.warning(f"Atenção: A imagem 'logo.png' não foi encontrada no GitHub.")
+        pass
 
 st.title("Cartão Fidelidade")
 
@@ -182,12 +164,14 @@ if st.session_state['pagina_atual'] == 'inicio':
     col_cli, col_barb = st.columns(2)
     
     with col_cli:
-        if st.button("ÁREA DO CLIENTE", type="primary"):
+        # Botão Primário animado com Emoji
+        if st.button("💇‍♂️ ÁREA DO CLIENTE", type="primary"):
             mudar_pagina('cliente')
             st.rerun()
             
     with col_barb:
-        if st.button("ÁREA RESTRITA", type="secondary"):
+        # Agora o Área Restrita também é Primário (Vermelho Animado)
+        if st.button("🔒 ÁREA RESTRITA", type="primary"):
             mudar_pagina('barbeiro')
             st.rerun()
 
@@ -197,7 +181,7 @@ if st.session_state['pagina_atual'] == 'inicio':
 elif st.session_state['pagina_atual'] == 'cliente':
     col_voltar, col_vazia = st.columns([1, 1])
     with col_voltar:
-        if st.button("⬅️ Voltar", type="tertiary"):
+        if st.button("⬅️ Voltar", type="secondary"):
             mudar_pagina('inicio')
             st.rerun()
         
@@ -249,7 +233,7 @@ elif st.session_state['pagina_atual'] == 'cliente':
 elif st.session_state['pagina_atual'] == 'barbeiro':
     col_voltar, col_sair = st.columns([1, 1])
     with col_voltar:
-        if st.button("⬅️ Voltar", type="tertiary"):
+        if st.button("⬅️ Voltar", type="secondary"):
             mudar_pagina('inicio')
             st.rerun()
             
@@ -269,7 +253,7 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                 
     if st.session_state['autenticado']:
         with col_sair:
-            if st.button("Sair (Logout)", type="tertiary"):
+            if st.button("Sair (Logout)", type="secondary"):
                 st.session_state['autenticado'] = False
                 st.rerun()
                 
@@ -301,6 +285,7 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                             st.markdown(f'<a href="https://wa.me/55{telefone_cli}?text={msg_encoded}" target="_blank" class="btn-zap">📱 Avisar no Whats</a>', unsafe_allow_html=True)
                             
                     with col2:
+                        # Alterado para "secondary" para não confundir com o vermelho primário
                         if st.button("🔄 Zerar", type="secondary"):
                             update_points(linha, 0)
                             st.success("Zerado!")
@@ -328,7 +313,7 @@ elif st.session_state['pagina_atual'] == 'barbeiro':
                             planilha.update_cell(linha, 3, str(novo_email))
                             st.success("Atualizado!")
                     with col_e:        
-                        if st.button("🗑️ Excluir", type="tertiary"):
+                        if st.button("🗑️ Excluir", type="secondary"):
                             planilha.delete_rows(linha)
                             st.success("Removido!")
                             st.rerun()
