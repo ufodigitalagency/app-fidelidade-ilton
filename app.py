@@ -3,412 +3,413 @@ import pandas as pd
 import urllib.parse
 import gspread
 from google.oauth2.service_account import Credentials
+import json
 
 # ==========================================
-# 1. CONFIGURAÇÃO E CSS HACKER V2 (APP NATIVO)
+# 1. CONFIGURAÇÃO DA PÁGINA E ESTILO GLOBAL
 # ==========================================
-st.set_page_config(page_title="Ilton Fidelidade Digital", page_icon="✂️", layout="centered")
+# Centralize a aplicação com um fundo escuro e tipografia moderna.
+st.set_page_config(
+    page_title="Ilton Fidelidade Digital",
+    page_icon="✂️",
+    layout="centered",
+)
 
-st.markdown("""
+# Carrega fontes e ajusta cores para uma experiência mais agradável em dispositivos móveis.
+st.markdown(
+    """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+    * { box-sizing: border-box; }
     
-    /* ANIQUILAR MARCAS DO STREAMLIT DE VEZ */
-    header, footer, [data-testid="stToolbar"], .viewerBadge_container, #viewerBadge { 
-        display: none !important; 
-        visibility: hidden !important; 
-    }
+    /* Remover cabeçalho e rodapé padrão do Streamlit */
+    header, footer { display: none !important; }
     
-    /* TRAVA O FORMATO DE CELULAR E CENTRALIZA */
-    .block-container {
-        max-width: 450px !important; 
-        margin: 0 auto !important;   
-        padding-top: 1.5rem !important;
-        padding-bottom: 6rem !important; /* Mais espaço pro rodapé */
-    }
-    .stApp { background-color: #0E1117; color: #FAFAFA; }
-    
-    /* LOGO 100% CENTRALIZADA NATIVA (A FORÇA) */
-    [data-testid="stImage"] {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        width: 100% !important;
-        margin: 0 auto !important;
-    }
-    [data-testid="stImage"] img {
-        max-width: 220px !important; 
-        margin: 0 auto !important;
-        display: block !important;
-    }
-    
-    /* TÍTULO DA HOME */
-    .titulo-app {
+    /* Configuração geral de fontes e cores */
+    .stApp {
+        background-color: #0E1117;
+        color: #FAFAFA;
         font-family: 'Montserrat', sans-serif;
+    }
+
+    h1 {
         color: #D4AF37;
         text-align: center;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-top: 0.5rem;
+    }
+    
+    h4 {
+        color: #C0C0C0;
+        text-align: center;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Estilização de botões primários e secundários */
+    div[data-testid="stButton"] button[kind="primary"] {
+        background: linear-gradient(45deg, #ff7e5f, #feb47b);
+        border: none;
+        color: #fff;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 14px 0;
+        width: 100%;
+        box-shadow: 0 4px 12px rgba(255, 126, 95, 0.4);
         text-transform: uppercase;
-        letter-spacing: 2px;
-        font-size: 1.6rem;
-        font-weight: 800;
-        line-height: 1.2;
-        margin-top: 15px;
-        margin-bottom: 40px;
-    }
-    
-    /* TEXTOS GERAIS */
-    h2, h3, h4, label, p { text-align: center !important; color: #C0C0C0 !important; font-family: 'Montserrat', sans-serif; }
-    p { margin-bottom: 10px !important; }
-    
-    /* --- CORREÇÃO DE ALINHAMENTO VERTICAL DOS BOTÕES --- */
-    div[data-testid="stButton"] button {
-        border-radius: 12px !important; 
-        font-weight: 800 !important;
-        text-transform: uppercase !important;
-        font-size: 0.9rem !important;
-        border: none !important;
-        transition: all 0.3s ease !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-    /* Oculta margens que empurram o texto do botão pra cima */
-    div[data-testid="stButton"] button p {
-        margin: 0 !important;
-        padding: 0 !important;
-        line-height: 1 !important;
-    }
-    
-    /* Botão Principal (Vermelho) */
-    div[data-testid="stButton"] button[kind="primary"] { 
-        width: 100% !important;
-        min-height: 65px !important;
-        background: linear-gradient(135deg, #ff1a1a 0%, #cc0000 100%) !important;
-        color: white !important;
-        box-shadow: 0 4px 15px rgba(255, 26, 26, 0.3) !important;
-        margin-bottom: 10px !important;
+        letter-spacing: 1px;
+        transition: transform 0.2s ease;
     }
     div[data-testid="stButton"] button[kind="primary"]:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 26, 26, 0.5) !important;
+        transform: scale(1.03);
     }
 
-    /* Botão Secundário (Preto/Dourado) */
-    div[data-testid="stButton"] button[kind="secondary"] { 
-        width: 100% !important;
-        min-height: 65px !important;
-        background-color: #1a1c24 !important;  
-        color: #D4AF37 !important; 
-        border: 1px solid #D4AF37 !important; 
-        margin-bottom: 10px !important;
+    div[data-testid="stButton"] button[kind="secondary"] {
+        background-color: #1A1A1A;
+        color: #AAAAAA;
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 12px 0;
+        width: 100%;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 1px;
     }
-    
-    /* Botão Terciário (Discreto para o "VOLTAR") */
-    div[data-testid="stButton"] button[kind="tertiary"] { 
-        background-color: transparent !important;  
-        color: #888888 !important; 
-        border: 1px solid #333 !important; 
-        min-height: 40px !important;
-        border-radius: 8px !important;
-        font-size: 0.75rem !important;
-        padding: 0 15px !important;
-        margin-bottom: 20px !important;
-        width: auto !important;
-    }
-    
-    /* ABAS (TABS) OTIMIZADAS */
-    [data-baseweb="tabs"] { width: 100%; margin-top: 5px; }
-    [data-baseweb="tab-list"] {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        background-color: transparent !important;
-        border-bottom: none !important;
-        margin-bottom: 25px;
-    }
-    [data-baseweb="tab"] {
+
+    /* Campos de entrada */
+    input, textarea, select {
         background-color: #1a1c24 !important;
-        border-radius: 10px !important;
-        padding: 15px !important;
-        color: #888 !important;
-        font-weight: 600 !important;
-        font-family: 'Montserrat', sans-serif;
-        border: 1px solid #333 !important;
-        transition: 0.3s;
-        flex: 1; /* Faz as abas dividirem o espaço igualmente */
+        border: 1px solid #444 !important;
+        color: #FAFAFA !important;
+        border-radius: 6px !important;
+        padding: 10px !important;
+        width: 100% !important;
     }
-    [aria-selected="true"] {
-        background: linear-gradient(135deg, #ff1a1a 0%, #cc0000 100%) !important;
+
+    /* Tabelas */
+    table {
+        background-color: #1a1c24 !important;
+        color: #FAFAFA !important;
+        width: 100% !important;
+        border-radius: 8px;
+    }
+    thead tr th {
+        background-color: #2b7cff !important;
         color: white !important;
-        border: none !important;
-        box-shadow: 0 4px 10px rgba(255, 26, 26, 0.3) !important;
     }
-    [data-baseweb="tab-highlight"] { display: none !important; } 
-    
-    /* CAIXAS DE TEXTO */
-    [data-testid="stTextInput"] input, [data-testid="stSelectbox"] > div > div { 
-        height: 55px !important; 
-        border-radius: 12px !important; 
-        background-color: #1a1c24 !important; 
-        color: white !important; 
-        border: 1px solid #333 !important; 
-        text-align: center !important; 
-        font-size: 1rem !important; 
+
+    /* Área de botões principais alinhados responsivamente */
+    .main-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin: 2rem 0;
     }
-    [data-testid="stTextInput"] input:focus { border-color: #ff1a1a !important; box-shadow: 0 0 8px rgba(255,26,26,0.4) !important;}
-    
-    /* LINK WHATSAPP */
-    .btn-zap { background-color: #25D366 !important; color: white !important; border-radius: 12px; border: none; padding: 18px; font-weight: 800; font-family: 'Montserrat', sans-serif; width: 100%; text-transform: uppercase; text-align: center; display: block; text-decoration: none; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); transition: 0.3s;}
-    
-    /* CARD DASHBOARD DO CLIENTE NO BARBEIRO */
-    .client-card {
-        background: #1a1c24;
-        border-radius: 15px;
-        padding: 25px 20px;
-        border: 1px solid #333;
+    @media (max-width: 768px) {
+        .main-buttons {
+            flex-direction: column;
+        }
+    }
+
+    /* Rodapé personalizado */
+    .rodape-ufo {
+        margin-top: 3rem;
         text-align: center;
-        margin-top: 15px;
-        margin-bottom: 25px;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        color: #444;
+        font-size: 0.65rem;
+        border-top: 1px solid #1A1A1A;
+        padding: 0.8rem 0;
     }
-    .client-card h3 { color: white; margin: 0 0 10px 0; font-size: 1.3rem; }
-    .client-card h1 { color: #D4AF37; margin: 0; font-size: 2.5rem; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.2); }
-    .client-card p { color: #888; font-size: 0.9rem; margin-top: 5px !important; }
-
-    /* TABELAS */
-    table { color: #FAFAFA !important; background-color: #1a1c24 !important; border-radius: 8px; width: 100%; text-align: center; }
-    thead tr th { background-color: #ff1a1a !important; color: white !important; text-align: center !important;}
-    
-    /* RODAPÉ SUBIU 25PX PRA NÃO BRIGAR COM O STREAMLIT */
-    .rodape-ufo { position: fixed; left: 0; bottom: 25px; width: 100%; background-color: transparent; color: #555; text-align: center; padding: 10px; font-size: 0.65rem; z-index: 999; }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
 
 # ==========================================
-# 2. CONEXÃO COM GOOGLE SHEETS
+# 2. CONEXÃO COM GOOGLE SHEETS (VIA CREDENCIAIS)
 # ==========================================
-scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+# Define escopos de acesso para planilha e drive.
+scopes = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
 
+# Tenta carregar as credenciais do arquivo de segredos do Streamlit ou dispara erro amigável.
 try:
-    cred_dict = dict(st.secrets["gcp_service_account"])
+    cred_dict = json.loads(st.secrets["gcp_credentials"])
+    # Ajusta formatação da chave privada
+    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
     credentials = Credentials.from_service_account_info(cred_dict, scopes=scopes)
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
 except Exception as e:
-    st.error(f"⚠️ Erro de conexão com a planilha.")
+    st.error(f"⚠️ Erro ao conectar ao Google Sheets: {e}")
     st.stop()
 
+# Funções auxiliares para lidar com registros
 def get_all_clients():
-    try: return planilha.get_all_records()
-    except: return []
+    """Retorna todos os registros da planilha ou lista vazia."""
+    try:
+        return planilha.get_all_records()
+    except Exception:
+        return []
 
-def find_client(telefone):
+def find_client(telefone: str):
+    """Localiza um cliente pelo telefone. Retorna (registro, linha)."""
     registros = get_all_clients()
-    for i, reg in enumerate(registros):
-        if str(reg.get('Telefone', '')).strip() == str(telefone).strip():
-            return reg, i + 2 
+    for idx, reg in enumerate(registros):
+        if str(reg.get("Telefone", "")).strip() == str(telefone).strip():
+            # +2 pois a primeira linha é cabeçalho e enumerate começa em 0
+            return reg, idx + 2
     return None, None
 
-def add_client(telefone, nome, email):
+def add_client(telefone: str, nome: str, email: str) -> None:
+    """Insere um novo cliente na segunda linha da planilha."""
     planilha.insert_row([str(telefone), str(nome), str(email), 0], 2)
 
-def update_points(linha, pontos):
-    planilha.update_cell(linha, 4, int(pontos)) 
-
-# NAVEGAÇÃO
-if 'pagina_atual' not in st.session_state:
-    st.session_state['pagina_atual'] = 'inicio'
-
-def mudar_pagina(nova_pagina):
-    st.session_state['pagina_atual'] = nova_pagina
+def update_points(linha: int, pontos: int) -> None:
+    """Atualiza a coluna de pontos de um registro específico."""
+    planilha.update_cell(linha, 4, int(pontos))
 
 # ==========================================
-# TELA 1: INÍCIO (COM LOGO E TÍTULO)
+# 3. NAVEGAÇÃO ENTRE PÁGINAS
 # ==========================================
-if st.session_state['pagina_atual'] == 'inicio':
-    try: st.image("logo.png")
-    except Exception: pass
-    
-    st.markdown("<div class='titulo-app'>CARTÃO<br>FIDELIDADE</div>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 1.1rem; color: #aaa; margin-bottom: 20px !important;'>Selecione seu acesso:</p>", unsafe_allow_html=True)
-    
-    if st.button("💇‍♂️ ÁREA DO CLIENTE", type="primary"):
-        mudar_pagina('cliente')
-        st.rerun()
-        
-    if st.button("🔒 ÁREA RESTRITA", type="secondary"):
-        mudar_pagina('barbeiro')
-        st.rerun()
+if "pagina_atual" not in st.session_state:
+    st.session_state["pagina_atual"] = "inicio"
+
+def mudar_pagina(nova_pagina: str) -> None:
+    st.session_state["pagina_atual"] = nova_pagina
 
 # ==========================================
-# TELA 2: ÁREA DO CLIENTE (FOCO NA AÇÃO)
+# 4. COMPONENTES DE INTERFACE
 # ==========================================
-elif st.session_state['pagina_atual'] == 'cliente':
-    # Botão de voltar discreto no topo
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col1:
-        if st.button("⬅️ Voltar", type="tertiary"):
-            mudar_pagina('inicio')
-            st.rerun()
-            
-    aba1, aba2 = st.tabs(["🔍 MEUS PONTOS", "📝 CADASTRAR"])
-    
-    with aba1:
-        st.markdown("<p>Digite seu número para ver seus pontos</p>", unsafe_allow_html=True)
-        telefone_busca = st.text_input("", placeholder="Ex: 35999999999", label_visibility="collapsed", key="busca_cli")
-        
-        st.write("")
-        if st.button("BUSCAR PONTOS", type="primary"):
-            if telefone_busca:
-                cliente, _ = find_client(telefone_busca)
+def exibir_logo():
+    """Exibe o logo centralizado se estiver disponível."""
+    try:
+        st.image("logo.png", use_container_width=True)
+    except Exception:
+        pass
+
+def rodape():
+    """Exibe o rodapé personalizado."""
+    st.markdown(
+        """
+        <div class="rodape-ufo">
+            Desenvolvido por UFO Digital Agency<br>
+            Ilton Cabeleireiro - +55 35 8702‑2576
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# ==========================================
+# 5. PÁGINAS
+# ==========================================
+def pagina_inicio():
+    """Tela inicial com seleção de acesso."""
+    exibir_logo()
+    st.title("Cartão Fidelidade")
+    st.markdown("<h4>Selecione seu acesso:</h4>", unsafe_allow_html=True)
+
+    # Botões principais organizados responsivamente
+    col_cli, col_barb = st.columns(2)
+    with col_cli:
+        if st.button("💇‍♂️ Área do Cliente", type="primary"):
+            mudar_pagina("cliente")
+            st.experimental_rerun()
+    with col_barb:
+        if st.button("🔒 Área Restrita", type="primary"):
+            mudar_pagina("barbeiro")
+            st.experimental_rerun()
+
+    rodape()
+
+def pagina_cliente():
+    """Tela para consulta de pontos e cadastro de novos clientes."""
+    # Botão de voltar
+    col_voltar, _ = st.columns([1, 3])
+    with col_voltar:
+        if st.button("⬅️ Voltar", type="secondary"):
+            mudar_pagina("inicio")
+            st.experimental_rerun()
+
+    aba_consulta, aba_cadastro = st.tabs(["🔍 Meus pontos", "📝 Cadastrar"])
+
+    # Aba de consulta de pontos
+    with aba_consulta:
+        st.divider()
+        telefone_busca = st.text_input(
+            "Seu WhatsApp (somente números):",
+            placeholder="Ex.: 35987654321",
+            key="busca_cli",
+        )
+        if st.button("Buscar meus pontos", type="primary"):
+            if telefone_busca.strip():
+                cliente, linha = find_client(telefone_busca)
                 if cliente:
-                    nome = cliente.get('Nome', 'Cliente')
-                    pontos = int(cliente.get('Pontos', 0))
+                    nome = cliente.get("Nome", "")
+                    pontos = int(cliente.get("Pontos", 0))
                     st.success(f"Olá, {nome}!")
                     st.info(f"Você tem **{pontos} ponto(s)** de 10.")
-                    progresso = pontos / 10 if pontos <= 10 else 1.0
+                    progresso = min(pontos / 10, 1.0)
                     st.progress(progresso)
                     if pontos >= 10:
                         st.balloons()
-                        st.warning("🎉 Completou o cartão! Próximo corte GRÁTIS!")
+                        st.warning("🎉 Você completou seu cartão! Próximo corte é grátis!")
                 else:
                     st.error("Número não encontrado.")
             else:
-                st.warning("Digite seu número.")
+                st.warning("Informe o seu número para buscar.")
 
-    with aba2:
-        st.markdown("<p>Crie seu cartão agora mesmo</p>", unsafe_allow_html=True)
-        novo_nome = st.text_input("", placeholder="Qual seu nome?", label_visibility="collapsed")
-        novo_telefone = st.text_input("", placeholder="WhatsApp com DDD (Ex: 3588888888)", label_visibility="collapsed", key="cad_cli")
-        novo_email = st.text_input("", placeholder="Seu e-mail", label_visibility="collapsed") 
-        
-        st.write("")
-        if st.button("CRIAR CARTÃO", type="primary"):
-            if novo_nome and novo_telefone and novo_email:
+    # Aba de cadastro de novo cliente
+    with aba_cadastro:
+        st.divider()
+        novo_nome = st.text_input("Nome:", key="novo_nome")
+        novo_telefone = st.text_input(
+            "WhatsApp (com DDD):",
+            placeholder="Ex.: 35987654321",
+            key="novo_telefone",
+        )
+        novo_email = st.text_input("E-mail:", key="novo_email")
+        if st.button("Criar Cartão", type="primary"):
+            if all([novo_nome.strip(), novo_telefone.strip(), novo_email.strip()]):
                 cliente_existente, _ = find_client(novo_telefone)
                 if cliente_existente:
-                    st.error("Opa! Número já cadastrado.")
+                    st.error("Número já cadastrado.")
                 else:
                     add_client(novo_telefone, novo_nome, novo_email)
-                    st.success(f"Cadastro feito com sucesso!")
+                    st.success(f"{novo_nome}! Cadastro realizado com sucesso.")
                     st.balloons()
             else:
-                st.warning("Preencha todos os campos.")
+                st.warning("Preencha todos os campos para continuar.")
 
-# ==========================================
-# TELA 3: ÁREA DO BARBEIRO (PAINEL MODERNO)
-# ==========================================
-elif st.session_state['pagina_atual'] == 'barbeiro':
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col1:
-        if st.button("⬅️ Voltar", type="tertiary"):
-            mudar_pagina('inicio')
-            st.rerun()
-            
-    if 'autenticado' not in st.session_state:
-        st.session_state['autenticado'] = False
+    rodape()
 
-    if not st.session_state['autenticado']:
-        st.markdown("<h3>Painel do Barbeiro</h3><p>Acesso exclusivo Ilton</p>", unsafe_allow_html=True)
-        senha = st.text_input("", type="password", placeholder="Digite a senha", label_visibility="collapsed")
-        
-        st.write("")
-        if st.button("ENTRAR", type="primary"):
+def pagina_barbeiro():
+    """Tela restrita para o barbeiro gerenciar pontos e clientes."""
+    # Voltar e sair
+    col_voltar, col_sair = st.columns([1, 1])
+    with col_voltar:
+        if st.button("⬅️ Voltar", type="secondary"):
+            mudar_pagina("inicio")
+            st.experimental_rerun()
+
+    # Controle de autenticação
+    if "autenticado" not in st.session_state:
+        st.session_state["autenticado"] = False
+
+    if not st.session_state["autenticado"]:
+        senha = st.text_input("Senha de acesso:", type="password")
+        if st.button("Entrar", type="primary"):
             if senha == "barba123":
-                st.session_state['autenticado'] = True
-                st.rerun()
+                st.session_state["autenticado"] = True
+                st.experimental_rerun()
             else:
                 st.error("Senha incorreta!")
-                
-    if st.session_state['autenticado']:
-        
-        acao = st.selectbox("Selecione a ação:", ["Adicionar Pontos", "Editar/Excluir", "Ver Todos"])
-        st.write("---")
+        rodape()
+        return
 
-        if acao == "Adicionar Pontos":
-            registros = get_all_clients()
-            registros_validos = [r for r in registros if str(r.get('Telefone', '')).strip() != '']
-            opcoes_clientes = [""] + [f"{reg.get('Nome', 'Sem Nome')} - {reg.get('Telefone', '')}" for reg in registros_validos]
-            
-            cliente_selecionado = st.selectbox("Buscar cliente:", opcoes_clientes)
+    # Se autenticado, mostra botão de sair
+    with col_sair:
+        if st.button("Sair (Logout)", type="secondary"):
+            st.session_state["autenticado"] = False
+            st.experimental_rerun()
 
-            if cliente_selecionado != "":
-                telefone_cli = cliente_selecionado.split(" - ")[-1]
-                cliente, linha = find_client(telefone_cli)
-                
-                if cliente:
-                    cli_nome = cliente.get('Nome', 'Sem Nome')
-                    cli_pontos = int(cliente.get('Pontos', 0))
-                    
-                    # CARD DASHBOARD PREMIUM EM HTML
-                    st.markdown(f"""
-                        <div class="client-card">
-                            <h3>{cli_nome}</h3>
-                            <h1>{cli_pontos} / 10</h1>
-                            <p>Pontos Atuais</p>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    
-                    if st.button("➕ ADICIONAR 1 PONTO", type="primary"):
-                        novos_pontos = cli_pontos + 1
+    st.divider()
+    acao = st.selectbox(
+        "O que deseja fazer?",
+        ["Gerenciar Pontos", "Editar/Excluir", "Ver Todos"],
+    )
+
+    # --- Gerenciar Pontos ---
+    if acao == "Gerenciar Pontos":
+        registros = get_all_clients()
+        opcoes = [""] + [f"{reg['Nome']} - {reg['Telefone']}" for reg in registros]
+        cliente_sel = st.selectbox("Selecionar cliente:", opcoes)
+        if cliente_sel != "":
+            telefone_cli = cliente_sel.split(" - ")[-1]
+            cliente, linha = find_client(telefone_cli)
+            if cliente:
+                nome_cli = cliente.get("Nome", "")
+                pontos_cli = int(cliente.get("Pontos", 0))
+                st.markdown(f"**{nome_cli}** | ⭐ **{pontos_cli}/10 Pontos**")
+                col_add, col_reset = st.columns(2)
+                with col_add:
+                    if st.button("➕ 1 Ponto", type="primary"):
+                        novos_pontos = pontos_cli + 1
                         update_points(linha, novos_pontos)
-                        st.success(f"Ponto Adicionado!")
-                        
-                        msg = f"Fala {cli_nome}, beleza? Você ganhou +1 ponto no Cartão Fidelidade! ✂️\n\nFaltam só {10 - novos_pontos} para o corte GRÁTIS!" if novos_pontos < 10 else f"Parabéns {cli_nome}! 🎉 Você completou 10 pontos! Próximo corte é GRÁTIS! ✂️"
+                        st.success(f"Total de pontos: {novos_pontos}")
+                        # Monta mensagem de WhatsApp
+                        if novos_pontos < 10:
+                            msg = (
+                                f"Fala {nome_cli}, beleza? Você ganhou +1 ponto no Cartão Fidelidade! ✂️\n\n"
+                                f"Faltam apenas {10 - novos_pontos} para o corte GRÁTIS!"
+                            )
+                        else:
+                            msg = (
+                                f"Parabéns {nome_cli}! 🎉 Você completou 10 pontos! Próximo corte é GRÁTIS! ✂️"
+                            )
                         msg_encoded = urllib.parse.quote(msg)
-                        st.markdown(f'<a href="https://wa.me/55{telefone_cli}?text={msg_encoded}" target="_blank" class="btn-zap">📱 AVISAR NO WHATSAPP</a>', unsafe_allow_html=True)
-                        
-                    if st.button("🔄 ZERAR PONTOS", type="secondary"):
+                        st.markdown(
+                            f'<a href="https://wa.me/55{telefone_cli}?text={msg_encoded}" '
+                            f'target="_blank" class="btn-zap">📱 Avisar no Whats</a>',
+                            unsafe_allow_html=True,
+                        )
+                with col_reset:
+                    if st.button("🔄 Zerar", type="secondary"):
                         update_points(linha, 0)
-                        st.success("Pontos Zerados!")
-                        st.rerun()
+                        st.success("Pontos zerados.")
+                        st.experimental_rerun()
 
-        elif acao == "Editar/Excluir":
-            registros = get_all_clients()
-            registros_validos = [r for r in registros if str(r.get('Telefone', '')).strip() != '']
-            opcoes_clientes = [""] + [f"{reg.get('Nome', 'Sem Nome')} - {reg.get('Telefone', '')}" for reg in registros_validos]
-            cliente_selecionado = st.selectbox("Cliente:", opcoes_clientes)
-
-            if cliente_selecionado != "":
-                telefone_cli = cliente_selecionado.split(" - ")[-1]
-                cliente, linha = find_client(telefone_cli)
-
-                if cliente:
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    novo_nome = st.text_input("Nome", value=str(cliente.get('Nome', '')))
-                    novo_telefone = st.text_input("WhatsApp", value=str(cliente.get('Telefone', '')))
-                    novo_email = st.text_input("E-mail", value=str(cliente.get('Email', '')))
-
-                    st.write("")
-                    if st.button("💾 SALVAR", type="primary"):
+    # --- Editar / Excluir cliente ---
+    elif acao == "Editar/Excluir":
+        registros = get_all_clients()
+        opcoes = [""] + [f"{reg['Nome']} - {reg['Telefone']}" for reg in registros]
+        cliente_sel = st.selectbox("Cliente:", opcoes)
+        if cliente_sel != "":
+            telefone_cli = cliente_sel.split(" - ")[-1]
+            cliente, linha = find_client(telefone_cli)
+            if cliente:
+                novo_nome = st.text_input("Nome:", value=cliente.get("Nome", ""))
+                novo_telefone = st.text_input("WhatsApp:", value=cliente.get("Telefone", ""))
+                novo_email = st.text_input("E‑mail:", value=cliente.get("Email", ""))
+                col_save, col_delete = st.columns(2)
+                with col_save:
+                    if st.button("💾 Salvar", type="primary"):
+                        # Atualiza individualmente cada campo
                         planilha.update_cell(linha, 1, str(novo_telefone))
                         planilha.update_cell(linha, 2, str(novo_nome))
                         planilha.update_cell(linha, 3, str(novo_email))
-                        st.success("Atualizado!")
-                            
-                    if st.button("🗑️ EXCLUIR CLIENTE", type="secondary"):
+                        st.success("Registro atualizado com sucesso.")
+                with col_delete:
+                    if st.button("🗑️ Excluir", type="secondary"):
                         planilha.delete_rows(linha)
-                        st.success("Removido!")
-                        st.rerun()
+                        st.success("Registro excluído com sucesso.")
+                        st.experimental_rerun()
 
-        elif acao == "Ver Todos":
-            registros = get_all_clients()
-            if registros:
-                st.table(pd.DataFrame(registros))
-            else:
-                st.info("Nenhum cliente cadastrado.")
-                
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("SAIR DO SISTEMA", type="tertiary"):
-            st.session_state['autenticado'] = False
-            st.rerun()
+    # --- Ver todos os clientes ---
+    elif acao == "Ver Todos":
+        registros = get_all_clients()
+        if registros:
+            st.table(pd.DataFrame(registros))
+        else:
+            st.info("Nenhum cliente cadastrado.")
+
+    rodape()
 
 # ==========================================
-# 6. RODAPÉ 
+# 6. FLUXO PRINCIPAL
 # ==========================================
-st.markdown("""
-    <div class="rodape-ufo">
-        Desenvolvido por UFO Digital Agency<br>
-        Ilton Cabeleireiro - +55 35 8702-2576
-    </div>
-""", unsafe_allow_html=True)
+def main():
+    pagina = st.session_state.get("pagina_atual", "inicio")
+    if pagina == "inicio":
+        pagina_inicio()
+    elif pagina == "cliente":
+        pagina_cliente()
+    elif pagina == "barbeiro":
+        pagina_barbeiro()
+
+
+if __name__ == "__main__":
+    main()
