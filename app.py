@@ -4,7 +4,7 @@ import urllib.parse
 import gspread
 from google.oauth2.service_account import Credentials
 import os
-import json # Biblioteca nova para ler o Cofre Secreto
+import json 
 
 # ==========================================
 # 1. CONFIGURAÇÃO DA PÁGINA E CSS
@@ -111,6 +111,11 @@ scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapi
 
 try:
     cred_dict = json.loads(st.secrets["gcp_credentials"])
+    
+    # ---> A MÁGICA QUE CONSERTA O ERRO JWT <---
+    # Isso força o Streamlit a ler as quebras de linha da chave corretamente
+    cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
+    
     credentials = Credentials.from_service_account_info(cred_dict, scopes=scopes)
     gc = gspread.authorize(credentials)
     planilha = gc.open("Barbearia_Fidelidade").sheet1
